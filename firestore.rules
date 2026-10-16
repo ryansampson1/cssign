@@ -1,0 +1,10 @@
+rules_version = '2';
+// STAGING: only the owner account can read or write anything.
+// Grant the claim once with the setRole function (or the Admin SDK): { role: "owner" }.
+// At cutover, replace this file with firestore.production.rules.
+service cloud.firestore {
+  match /databases/{db}/documents {
+    function isOwner() { return request.auth != null && request.auth.token.role == 'owner'; }
+    match /{document=**} { allow read, write: if isOwner(); }
+  }
+}

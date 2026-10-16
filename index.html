@@ -1,1 +1,1717 @@
+<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>Post &amp; Panel</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Overpass:wght@400;600;700;800;900&family=Overpass+Mono:wght@400;600&display=swap">
+<style>
+/* Layout: highway-green sign rail on the left, work surface on the right; rail becomes a top strip on phones. */
+:root{
+  --bg:#F2F4F1; --surface:#FFFFFF; --sunk:#E8ECE8; --ink:#14201A; --muted:#56665D; --line:#D7DED8;
+  --rail:#0B4A35; --rail-ink:#EAF4EE; --rail-dim:#A9C8B8; --rail-hi:#13664A;
+  --accent:#0B6B4B; --accent-ink:#FFFFFF; --accent-soft:#DDEEE5;
+  --good:#1E7B46; --good-soft:#DFF1E5; --warn:#9A6200; --warn-soft:#FBEFD6; --bad:#B3261E; --bad-soft:#F9E1DE; --info:#24527A; --info-soft:#E0EBF5;
+  --f-display:"Overpass","Arial Narrow",Arial,sans-serif; --f-body:"Overpass",system-ui,-apple-system,"Segoe UI",sans-serif; --f-mono:"Overpass Mono",ui-monospace,Menlo,Consolas,monospace;
+}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){
+  --bg:#0E1412; --surface:#151E1A; --sunk:#1B2621; --ink:#E5ECE8; --muted:#94A69C; --line:#2A3832;
+  --rail:#082A1F; --rail-ink:#E3F1E9; --rail-dim:#86A898; --rail-hi:#11402F;
+  --accent:#3DB487; --accent-ink:#06140E; --accent-soft:#17352A;
+  --good:#5BCB8A; --good-soft:#163323; --warn:#E4AE4C; --warn-soft:#3A2C10; --bad:#F2807A; --bad-soft:#3E1B19; --info:#8BB8E0; --info-soft:#172A3B; color-scheme:dark}}
+:root[data-theme="dark"]{
+  --bg:#0E1412; --surface:#151E1A; --sunk:#1B2621; --ink:#E5ECE8; --muted:#94A69C; --line:#2A3832;
+  --rail:#082A1F; --rail-ink:#E3F1E9; --rail-dim:#86A898; --rail-hi:#11402F;
+  --accent:#3DB487; --accent-ink:#06140E; --accent-soft:#17352A;
+  --good:#5BCB8A; --good-soft:#163323; --warn:#E4AE4C; --warn-soft:#3A2C10; --bad:#F2807A; --bad-soft:#3E1B19; --info:#8BB8E0; --info-soft:#172A3B; color-scheme:dark}
+*{box-sizing:border-box}
+html,body{height:100%}
+body{background:var(--bg);color:var(--ink);font-family:var(--f-body);font-size:14px;line-height:1.45}
+body::before{content:"";position:fixed;inset:0 0 auto;height:env(safe-area-inset-top,0px);z-index:10;background:var(--rail)}
+button,input,select,textarea{font:inherit;color:inherit}
+.app{display:grid;grid-template-columns:232px minmax(0,1fr);min-height:100%}
+.rail{background:var(--rail);color:var(--rail-ink);padding-block:18px;padding-left:max(14px,env(safe-area-inset-left,0px));padding-right:14px;position:sticky;top:env(safe-area-inset-top,0px);height:100vh;overflow:auto;display:flex;flex-direction:column;gap:18px}
+.brand{display:flex;flex-direction:column;gap:2px;padding:10px 12px;border:2px solid var(--rail-ink);border-radius:8px}
+.brand b{font-family:var(--f-display);font-weight:900;font-size:19px;letter-spacing:.02em;text-transform:uppercase;line-height:1.05}
+.brand span{font-size:11px;color:var(--rail-dim);letter-spacing:.08em;text-transform:uppercase}
+.nav{display:flex;flex-direction:column;gap:2px}
+.nav button{all:unset;cursor:pointer;display:flex;justify-content:space-between;align-items:center;gap:8px;padding:8px 10px;border-radius:6px;color:var(--rail-ink);font-weight:600;font-size:14px}
+.nav button:hover{background:var(--rail-hi)}
+.nav button[aria-current="page"]{background:var(--rail-ink);color:var(--rail)}
+.nav button:focus-visible{outline:2px solid var(--rail-ink);outline-offset:2px}
+.nav .ct{font-family:var(--f-mono);font-size:11px;min-width:22px;text-align:center;padding:1px 6px;border-radius:99px;background:var(--rail-hi);color:var(--rail-ink)}
+.nav button[aria-current="page"] .ct{background:var(--rail);color:var(--rail-ink)}
+.rail .foot{margin-top:auto;font-size:11px;color:var(--rail-dim);display:flex;flex-direction:column;gap:6px}
+.rail .foot button{all:unset;cursor:pointer;text-decoration:underline;color:var(--rail-ink)}
+.top{display:flex;flex-wrap:wrap;gap:10px 16px;align-items:center;justify-content:space-between;padding-block:14px;padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px));border-bottom:1px solid var(--line);background:var(--surface);position:sticky;top:env(safe-area-inset-top,0px);z-index:5}
+.top h1{font-family:var(--f-display);font-size:20px;font-weight:800;margin:0;text-wrap:balance}
+.viewas{display:flex;flex-wrap:wrap;gap:8px;align-items:center}
+.viewas label{font-size:11px;letter-spacing:.08em;text-transform:uppercase;color:var(--muted);font-weight:700}
+.staging{font-size:11px;font-weight:700;letter-spacing:.06em;text-transform:uppercase;background:var(--warn-soft);color:var(--warn);padding:3px 8px;border-radius:4px}
+main{padding-block:20px 60px;padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px));display:flex;flex-direction:column;gap:18px;min-width:0}
+h2{font-family:var(--f-display);font-size:16px;font-weight:800;margin:0;text-wrap:balance}
+h3{font-size:13px;margin:0;font-weight:700}
+.eyebrow{font-size:11px;letter-spacing:.08em;text-transform:uppercase;color:var(--muted);font-weight:700}
+.muted{color:var(--muted)}
+.num{font-variant-numeric:tabular-nums;font-family:var(--f-mono)}
+.card{background:var(--surface);border:1px solid var(--line);border-radius:8px;padding:16px;display:flex;flex-direction:column;gap:12px;min-width:0}
+.card-h{display:flex;flex-wrap:wrap;justify-content:space-between;align-items:baseline;gap:8px}
+.grid2{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:18px}
+.grid3{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:18px}
+.kpis{display:grid;grid-template-columns:repeat(6,minmax(0,1fr));gap:1px;background:var(--line);border:1px solid var(--line);border-radius:8px;overflow:hidden}
+.kpi{background:var(--surface);padding:14px;display:flex;flex-direction:column;gap:4px;min-width:0}
+.kpi .v{font-family:var(--f-display);font-size:24px;font-weight:800;font-variant-numeric:tabular-nums;line-height:1.1}
+.kpi .s{font-size:12px;color:var(--muted)}
+.tbl-wrap{overflow-x:auto;border:1px solid var(--line);border-radius:8px;background:var(--surface)}
+table.tbl{width:100%;border-collapse:collapse;font-size:13px}
+.tbl th{text-align:left;font-size:11px;letter-spacing:.06em;text-transform:uppercase;color:var(--muted);font-weight:700;padding:9px 12px;border-bottom:1px solid var(--line);background:var(--sunk);white-space:nowrap}
+.tbl td{padding:9px 12px;border-bottom:1px solid var(--line);vertical-align:middle}
+.tbl tr:last-child td{border-bottom:0}
+.tbl td.r,.tbl th.r{text-align:right}
+.tbl tr.click{cursor:pointer}
+.tbl tr.click:hover td{background:var(--sunk)}
+.tbl input{width:88px;text-align:right;padding:5px 7px;border:1px solid var(--line);border-radius:5px;background:var(--bg);font-family:var(--f-mono);font-variant-numeric:tabular-nums}
+.tbl input:focus{outline:2px solid var(--accent);outline-offset:0}
+.pill{display:inline-flex;align-items:center;gap:5px;font-size:12px;font-weight:700;padding:2px 8px;border-radius:99px;white-space:nowrap;background:var(--sunk);color:var(--muted)}
+.pill.good{background:var(--good-soft);color:var(--good)} .pill.warn{background:var(--warn-soft);color:var(--warn)} .pill.bad{background:var(--bad-soft);color:var(--bad)} .pill.info{background:var(--info-soft);color:var(--info)} .pill.acc{background:var(--accent-soft);color:var(--accent)}
+.btn{cursor:pointer;border:1px solid var(--line);background:var(--surface);padding:7px 12px;border-radius:6px;font-weight:700;font-size:13px;display:inline-flex;align-items:center;gap:6px;white-space:nowrap}
+.btn:hover{border-color:var(--accent)}
+.btn:focus-visible,select:focus-visible,input:focus-visible,textarea:focus-visible{outline:2px solid var(--accent);outline-offset:1px}
+.btn.primary{background:var(--accent);color:var(--accent-ink);border-color:var(--accent)}
+.btn.primary:hover{filter:brightness(1.08)}
+.btn.sm{padding:4px 9px;font-size:12px}
+.btn[disabled]{opacity:.45;cursor:not-allowed}
+.row{display:flex;flex-wrap:wrap;gap:8px;align-items:center}
+.spread{display:flex;flex-wrap:wrap;gap:8px;align-items:center;justify-content:space-between}
+.form{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px}
+.field{display:flex;flex-direction:column;gap:4px;min-width:0}
+.field.full{grid-column:1/-1}
+.field label{font-size:11px;letter-spacing:.06em;text-transform:uppercase;color:var(--muted);font-weight:700}
+.field input,.field select,.field textarea,select.inp{padding:8px 10px;border:1px solid var(--line);border-radius:6px;background:var(--bg);width:100%;min-width:0}
+.check{display:flex;gap:8px;align-items:center;font-size:13px}
+.lines{width:100%;border-collapse:collapse;font-size:13px}
+.lines td{padding:6px 0;border-bottom:1px dashed var(--line)}
+.lines td.r{text-align:right;font-family:var(--f-mono);font-variant-numeric:tabular-nums;white-space:nowrap;padding-left:10px}
+.lines tr.tot td{border-bottom:0;border-top:2px solid var(--ink);font-weight:800;font-size:15px;padding-top:9px}
+.split{display:grid;grid-template-columns:1fr 1fr;gap:1px;background:var(--line);border-radius:6px;overflow:hidden}
+.split div{background:var(--accent-soft);padding:10px;display:flex;flex-direction:column;gap:2px}
+.split b{font-family:var(--f-mono);font-size:16px}
+.track{display:flex;gap:3px;align-items:stretch;flex-wrap:wrap}
+.track span{flex:1 1 60px;font-size:10.5px;font-weight:700;letter-spacing:.04em;text-transform:uppercase;padding:6px 6px 5px;border-top:4px solid var(--line);color:var(--muted)}
+.track span.done{border-color:var(--accent);color:var(--ink)}
+.track span.now{border-color:var(--warn);color:var(--ink)}
+.list{display:flex;flex-direction:column;gap:0}
+.item{display:flex;gap:12px;justify-content:space-between;align-items:flex-start;padding:11px 0;border-bottom:1px solid var(--line);flex-wrap:wrap}
+.item:last-child{border-bottom:0}
+.item .grow{flex:1 1 240px;min-width:0;display:flex;flex-direction:column;gap:3px}
+.chips{display:flex;flex-wrap:wrap;gap:6px}
+.chip{cursor:pointer;border:1px solid var(--line);background:var(--surface);padding:4px 10px;border-radius:99px;font-size:12px;font-weight:700}
+.chip[aria-pressed="true"]{background:var(--ink);color:var(--surface);border-color:var(--ink)}
+.proof{width:100%;max-width:100%;height:auto;border:1px solid var(--line);border-radius:4px;background:#fff}
+.note{font-size:12px;color:var(--muted);border-left:3px solid var(--line);padding-left:10px}
+.alert{display:flex;gap:10px;align-items:flex-start;padding:10px 12px;border-radius:6px;font-size:13px}
+.alert.warn{background:var(--warn-soft);color:var(--ink)} .alert.bad{background:var(--bad-soft)} .alert.info{background:var(--info-soft)}
+.bar-row{display:grid;grid-template-columns:110px minmax(0,1fr) 44px;gap:10px;align-items:center;font-size:12px}
+.bar-row .b{height:14px;background:var(--sunk);border-radius:3px;overflow:hidden}
+.bar-row .b i{display:block;height:100%;background:var(--accent)}
+svg .ax{stroke:var(--line)} svg .lbl{fill:var(--muted);font-size:10px;font-family:var(--f-mono)} svg .bar{fill:var(--accent)} svg .bar.cur{fill:var(--warn)} svg .val{fill:var(--ink);font-size:10px;font-family:var(--f-mono)}
+.modal-bg{position:fixed;inset:0;background:rgba(10,20,15,.45);z-index:20;display:flex;justify-content:flex-end}
+.modal{background:var(--bg);width:min(720px,100%);height:100%;overflow:auto;padding-block:calc(18px + env(safe-area-inset-top,0px)) calc(40px + env(safe-area-inset-bottom,0px));padding-left:18px;padding-right:max(18px,env(safe-area-inset-right,0px));display:flex;flex-direction:column;gap:14px;box-shadow:-10px 0 30px rgba(0,0,0,.2)}
+.toast{position:fixed;bottom:calc(18px + env(safe-area-inset-bottom,0px));right:max(18px,env(safe-area-inset-right,0px));background:var(--ink);color:var(--surface);padding:10px 14px;border-radius:6px;font-weight:700;z-index:30;max-width:calc(100% - 36px)}
+.kv{display:grid;grid-template-columns:max-content minmax(0,1fr);gap:4px 14px;font-size:13px}
+.kv dt{color:var(--muted)} .kv dd{margin:0}
+textarea{resize:vertical}
+.sop{display:grid;grid-template-columns:44px minmax(0,1fr);gap:12px;padding:14px 0;border-bottom:1px solid var(--line)}
+.sop:last-child{border-bottom:0}
+.sop .n{font-family:var(--f-display);font-weight:900;font-size:22px;color:var(--accent)}
+.sop ul{margin:4px 0 0;padding-left:18px}
+@media (max-width:1100px){.kpis{grid-template-columns:repeat(3,minmax(0,1fr))}.grid3{grid-template-columns:1fr 1fr}}
+@media (max-width:820px){
+  .app{grid-template-columns:minmax(0,1fr)}
+  .rail{position:static;height:auto;flex-direction:column;gap:10px;padding-block:12px;padding-right:max(14px,env(safe-area-inset-right,0px))}
+  .nav{flex-direction:row;overflow-x:auto;gap:4px;padding-bottom:4px}
+  .nav button{white-space:nowrap}
+  .rail .foot{display:none}
+  .grid2,.grid3,.form{grid-template-columns:minmax(0,1fr)}
+  .kpis{grid-template-columns:repeat(2,minmax(0,1fr))}
+  .top{position:static}
+}
+@media (prefers-reduced-motion:no-preference){.toast{animation:pop .2s ease-out}@keyframes pop{from{transform:translateY(8px);opacity:.4}}}
 
+/* ---------- PUBLIC WEBSITE ---------- */
+:root{--signal:#F2C230;--signal-ink:#17150B}
+html{scroll-behavior:auto}
+@media (prefers-reduced-motion:no-preference){html{scroll-behavior:smooth}}
+#site{min-height:100%;background:var(--bg)}
+#site section[id]{scroll-margin-top:84px}
+.s-wrap{max-width:1180px;margin:0 auto;padding-left:max(20px,env(safe-area-inset-left,0px));padding-right:max(20px,env(safe-area-inset-right,0px))}
+.s-stagebar{background:var(--warn-soft);color:var(--ink);font-size:12px}
+.s-stagebar .s-wrap{display:flex;flex-wrap:wrap;gap:8px 12px;align-items:center;justify-content:space-between;padding-block:6px}
+.s-stagebar select{padding:3px 6px;border:1px solid var(--line);border-radius:4px;background:var(--surface)}
+.s-head{position:sticky;top:env(safe-area-inset-top,0px);z-index:8;background:var(--surface);border-bottom:1px solid var(--line)}
+.s-head .s-wrap{display:flex;align-items:center;gap:20px;min-height:68px;flex-wrap:wrap;padding-block:8px}
+.wordmark{display:flex;align-items:center;gap:9px;font-family:var(--f-display);font-weight:900;text-transform:uppercase;letter-spacing:.06em;color:var(--ink);text-decoration:none;font-size:17px;line-height:1}
+.wordmark .cs{background:#0B4A35;color:#fff;padding:7px 9px 4px;border-radius:5px;font-size:21px;letter-spacing:.02em;box-shadow:inset 0 0 0 2px #0B4A35,inset 0 0 0 4px #fff}
+.wordmark small{display:block;font-size:10px;letter-spacing:.14em;color:var(--muted);font-weight:700;margin-top:3px}
+.wordmark img{height:42px;width:auto}
+.s-links{display:flex;gap:22px;margin-left:auto;align-items:center}
+.s-links a{color:var(--ink);text-decoration:none;font-weight:700;font-size:14px}
+.s-links a:hover{color:var(--accent)}
+.s-actions{display:flex;gap:10px;align-items:center}
+.linkbtn{all:unset;cursor:pointer;font-weight:700;font-size:14px;color:var(--ink);padding:8px 4px;border-bottom:2px solid transparent}
+.linkbtn:hover{border-color:var(--accent)}
+.linkbtn:focus-visible,.plate:focus-visible{outline:3px solid var(--accent);outline-offset:3px}
+.plate{cursor:pointer;background:var(--signal);color:var(--signal-ink);font-family:var(--f-display);font-weight:900;text-transform:uppercase;letter-spacing:.05em;border:0;border-radius:9px;box-shadow:inset 0 0 0 3px var(--signal),inset 0 0 0 5px var(--signal-ink);padding:11px 18px 8px;font-size:14px;line-height:1;display:inline-flex;align-items:center;gap:10px}
+.plate:hover{filter:brightness(1.05)}
+.plate.xl{font-size:32px;padding:24px 34px 19px;border-radius:14px;box-shadow:inset 0 0 0 4px var(--signal),inset 0 0 0 8px var(--signal-ink),0 14px 30px rgba(0,0,0,.28)}
+@media (prefers-reduced-motion:no-preference){.plate.xl{transition:transform .15s ease}.plate.xl:hover{transform:translateY(-2px)}}
+.s-hero{background:#0B4A35;color:#EAF4EE}
+.s-hero .s-wrap{display:grid;grid-template-columns:minmax(0,1.02fr) minmax(0,1fr);gap:44px;align-items:center;padding-block:56px 60px}
+.s-hero .eyebrow{color:#A9C8B8}
+.s-hero h1{font-family:var(--f-display);font-weight:900;font-size:clamp(34px,4.6vw,58px);line-height:1.02;letter-spacing:-.01em;margin:10px 0 16px;text-wrap:balance}
+.s-hero p.lede{font-size:18px;line-height:1.55;max-width:34em;color:#D3E6DB;margin:0 0 26px}
+.s-hero .cta{display:flex;flex-wrap:wrap;gap:16px 22px;align-items:center}
+.s-hero .cta .linkbtn{color:#EAF4EE}
+.s-hero .cta .linkbtn:hover{border-color:var(--signal)}
+.s-facts{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:18px;margin:34px 0 0;padding-top:20px;border-top:1px solid #2E6B54}
+.s-facts div{display:flex;flex-direction:column;gap:2px}
+.s-facts b{font-family:var(--f-display);font-size:22px;font-weight:900;font-variant-numeric:tabular-nums;color:#fff}
+.s-facts span{font-size:12px;color:#A9C8B8}
+.scene{display:block;width:100%;max-width:100%;height:auto;border-radius:10px}
+.s-hero figure{margin:0;box-shadow:0 20px 50px rgba(0,0,0,.35);border-radius:10px}
+.s-trust{background:var(--surface);border-bottom:1px solid var(--line)}
+.s-trust .s-wrap{display:flex;flex-wrap:wrap;align-items:center;gap:14px 34px;padding-block:24px}
+.s-trust .eyebrow{flex:0 0 auto;max-width:15em}
+.s-clients{display:flex;flex-wrap:wrap;gap:12px 34px;align-items:center;flex:1 1 400px}
+.s-clients span{font-family:var(--f-display);font-weight:800;font-size:18px;letter-spacing:.02em;color:var(--muted);white-space:nowrap}
+.s-clients img{height:34px;width:auto;filter:grayscale(1);opacity:.8}
+.s-sec{padding-block:68px}
+.s-sec.alt{background:var(--surface);border-block:1px solid var(--line)}
+.s-sec h2.s-h{font-family:var(--f-display);font-weight:900;font-size:clamp(26px,3.2vw,38px);line-height:1.08;margin:6px 0 10px;text-wrap:balance}
+.s-sec p.s-sub{font-size:16px;color:var(--muted);max-width:42em;margin:0 0 30px;line-height:1.55}
+.s-grid3{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:20px}
+.s-svc{background:var(--surface);border:1px solid var(--line);border-radius:10px;padding:22px;display:flex;flex-direction:column;gap:10px}
+.s-sec.alt .s-svc{background:var(--bg)}
+.s-svc svg{width:40px;height:40px;color:var(--accent)}
+.s-svc h3{font-family:var(--f-display);font-size:19px;font-weight:800;margin:0}
+.s-svc p{margin:0;color:var(--muted);line-height:1.5}
+.s-svc .from{margin-top:auto;font-family:var(--f-mono);font-size:13px;font-weight:600;color:var(--accent);padding-top:6px}
+.s-band{margin-top:22px;display:grid;grid-template-columns:auto minmax(0,1fr) auto;gap:20px;align-items:center;background:var(--accent-soft);border-radius:10px;padding:20px 24px}
+.s-band b{font-family:var(--f-display);font-size:18px;font-weight:900}
+.s-steps{padding:0;margin:0;display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:24px;counter-reset:st}
+.s-steps li{list-style:none;display:flex;flex-direction:column;gap:8px;border-top:4px solid var(--accent);padding-top:14px}
+.s-steps li::before{counter-increment:st;content:counter(st);font-family:var(--f-display);font-weight:900;font-size:34px;color:var(--accent);line-height:1}
+.s-steps h3{font-size:17px;font-family:var(--f-display);font-weight:800;margin:0}
+.s-steps p{margin:0;color:var(--muted);line-height:1.5}
+.s-steps ol{padding:0;margin:0}
+.s-work{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:18px}
+.s-work figure{margin:0;display:flex;flex-direction:column;gap:8px}
+.s-work img{width:100%;aspect-ratio:3/2;object-fit:cover;border-radius:10px;max-width:100%}
+.s-work figcaption{font-size:13px;color:var(--muted)}
+.s-work figcaption b{color:var(--ink);display:block;font-size:14px}
+.s-about{display:grid;grid-template-columns:minmax(0,1.25fr) minmax(0,1fr);gap:48px;align-items:start}
+.s-about p{font-size:16px;line-height:1.65;margin:0 0 14px;max-width:38em}
+.s-about dl{display:grid;grid-template-columns:max-content minmax(0,1fr);gap:12px 18px;margin:0;background:var(--surface);border:1px solid var(--line);border-radius:10px;padding:22px}
+.s-about dt{font-size:11px;letter-spacing:.08em;text-transform:uppercase;color:var(--muted);font-weight:700;padding-top:2px}
+.s-about dd{margin:0;font-weight:600}
+.s-contact{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1.2fr);gap:40px;align-items:start}
+.s-contact .info{display:flex;flex-direction:column;gap:16px;font-size:15px}
+.s-contact .info b{display:block;font-size:11px;letter-spacing:.08em;text-transform:uppercase;color:var(--muted)}
+.s-contact form{background:var(--bg);border:1px solid var(--line);border-radius:10px;padding:22px}
+.s-foot{background:#082A1F;color:#C9DDD2;font-size:13px}
+.s-foot .s-wrap{display:flex;flex-wrap:wrap;gap:14px 28px;justify-content:space-between;align-items:center;padding-block:28px calc(28px + env(safe-area-inset-bottom,0px))}
+.s-foot .linkbtn{color:#EAF4EE;font-size:13px}
+.s-signin{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:22px;max-width:980px}
+.s-signin .card{padding:24px}
+@media (max-width:960px){
+  .s-hero .s-wrap,.s-about,.s-contact{grid-template-columns:minmax(0,1fr)}
+  .s-grid3,.s-work{grid-template-columns:repeat(2,minmax(0,1fr))}
+  .s-steps{grid-template-columns:repeat(2,minmax(0,1fr))}
+  .s-links{display:none}
+  .s-actions{margin-left:auto}
+}
+@media (max-width:620px){
+  .s-grid3,.s-work,.s-steps,.s-signin{grid-template-columns:minmax(0,1fr)}
+  .s-facts{grid-template-columns:repeat(2,minmax(0,1fr))}
+  .s-band{grid-template-columns:minmax(0,1fr)}
+  .plate.xl{font-size:24px;padding:20px 24px 16px}
+  .s-actions .linkbtn{display:none}
+  .s-sec{padding-block:48px}
+}
+
+/* ---------- SITE v2: photographic ---------- */
+.s-head{background:rgba(8,20,15,.88);border-bottom:1px solid rgba(255,255,255,.08)}
+@supports (backdrop-filter:blur(8px)){.s-head{background:rgba(8,20,15,.9);backdrop-filter:saturate(1.3) blur(12px)}}
+.s-head .wordmark{color:#fff} .s-head .wordmark small{color:#9DB6A9}
+.s-head .wordmark .cs{background:#0B4A35;box-shadow:inset 0 0 0 2px #0B4A35,inset 0 0 0 4px #fff}
+.s-links a,.s-head .linkbtn{color:#E3ECE7} .s-links a:hover{color:var(--signal)} .s-head .linkbtn:hover{border-color:var(--signal)}
+.hx{position:relative;color:#fff;background:#0A1712;overflow:hidden;isolation:isolate}
+.hx-bg{position:absolute;inset:0;z-index:-2;background:#0A1712 url("img/tampa-night.jpg") 62% 45%/cover no-repeat}
+.hx::before{content:"";position:absolute;inset:0;z-index:-1;background:linear-gradient(90deg,rgba(7,16,12,.95) 0%,rgba(7,16,12,.82) 34%,rgba(7,16,12,.35) 66%,rgba(7,16,12,.15) 100%),linear-gradient(0deg,rgba(7,16,12,.9) 0%,rgba(7,16,12,0) 38%)}
+.hx .s-wrap{display:grid;grid-template-columns:minmax(0,1.15fr) minmax(0,.85fr);gap:40px;align-items:end;min-height:min(88vh,780px);padding-block:110px 0}
+.hx-copy{padding-bottom:64px}
+.hx .eyebrow{color:var(--signal);letter-spacing:.2em}
+.hx h1{font-family:var(--f-display);font-weight:900;font-size:clamp(42px,6.6vw,96px);line-height:.93;letter-spacing:-.03em;margin:16px 0 22px;text-wrap:balance}
+.hx h1 em{font-style:normal;color:var(--signal)}
+.hx .lede{font-size:clamp(16px,1.45vw,19px);line-height:1.55;color:#CCDAD2;max-width:32em;margin:0 0 32px}
+.hx .cta{display:flex;flex-wrap:wrap;gap:16px 26px;align-items:center}
+.hx .cta .linkbtn{color:#fff} .hx .cta .linkbtn:hover{border-color:var(--signal)}
+.hx-meta{display:flex;flex-wrap:wrap;gap:6px 22px;margin-top:40px;font-size:12px;letter-spacing:.12em;text-transform:uppercase;color:#93AA9E;font-weight:700}
+.hx-meta span::before{content:"";display:inline-block;width:6px;height:6px;background:var(--signal);margin-right:9px;vertical-align:2px}
+.hx-sign{position:relative;justify-self:end;width:min(470px,100%);align-self:end}
+.hx-sign svg{display:block;width:100%;height:auto;filter:drop-shadow(0 34px 38px rgba(0,0,0,.6))}
+@media (prefers-reduced-motion:no-preference){.hx-sign svg{animation:rise .9s cubic-bezier(.2,.7,.2,1) both .15s}@keyframes rise{from{transform:translateY(40px);opacity:.2}}}
+.hx-chip{position:absolute;left:-18px;top:-22px;background:var(--signal);color:var(--signal-ink);font-family:var(--f-display);font-weight:900;border-radius:10px;padding:10px 14px 7px;box-shadow:inset 0 0 0 2px var(--signal),inset 0 0 0 4px var(--signal-ink),0 12px 24px rgba(0,0,0,.35);transform:rotate(-4deg);line-height:1.05}
+.hx-chip small{display:block;font-size:10px;letter-spacing:.12em;text-transform:uppercase}
+.hx-chip b{font-size:30px;font-variant-numeric:tabular-nums}
+.lg{background:#0A1712;color:#fff;border-top:1px solid rgba(255,255,255,.07)}
+.lg .s-wrap{display:flex;flex-wrap:wrap;align-items:center;gap:22px 56px;padding-block:34px}
+.lg .eyebrow{color:#8FA89B;max-width:13em;line-height:1.5}
+.lg-row{display:flex;flex:1 1 560px;flex-wrap:wrap;align-items:center;justify-content:space-between;gap:26px 40px}
+.lg-row img{width:auto;max-width:170px;filter:brightness(0) invert(1);opacity:.8;transition:opacity .2s}
+.lg-row img:hover{opacity:1}
+.st{background:var(--surface);border-bottom:1px solid var(--line)}
+.st .s-wrap{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));padding-block:54px}
+.st div{padding:0 26px;border-left:1px solid var(--line);display:flex;flex-direction:column;gap:8px}
+.st div:first-child{border-left:0;padding-left:0}
+.st b{font-family:var(--f-display);font-weight:900;font-size:clamp(38px,4.8vw,64px);line-height:.95;letter-spacing:-.03em;font-variant-numeric:tabular-nums}
+.st span{color:var(--muted);font-size:14px;line-height:1.45;max-width:17em}
+.sv-head{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:28px 60px;align-items:end;margin-bottom:34px}
+.sv-head p{margin:0;color:var(--muted);font-size:16px;line-height:1.6;max-width:34em}
+.bento{display:grid;grid-template-columns:1.25fr 1fr 1fr;grid-template-rows:300px 300px;gap:16px}
+.tile{position:relative;border-radius:14px;overflow:hidden;color:#fff;display:flex;flex-direction:column;justify-content:flex-end;padding:24px;isolation:isolate;min-width:0;background:#13231c}
+.tile img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;z-index:-2;transition:transform .6s cubic-bezier(.2,.7,.2,1)}
+.tile::after{content:"";position:absolute;inset:0;z-index:-1;background:linear-gradient(0deg,rgba(6,14,10,.92) 0%,rgba(6,14,10,.45) 45%,rgba(6,14,10,.05) 75%)}
+.tile:hover img{transform:scale(1.045)}
+.tile.a{grid-row:span 2} .tile.b{grid-column:span 2}
+.tile .from{font-family:var(--f-mono);font-size:12px;font-weight:600;color:var(--signal);letter-spacing:.04em}
+.tile h3{font-family:var(--f-display);font-weight:900;font-size:clamp(22px,2.3vw,30px);line-height:1.02;margin:6px 0 8px;letter-spacing:-.01em}
+.tile p{margin:0;color:#D5E0DA;font-size:14px;line-height:1.5;max-width:30em}
+.also{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:0;margin-top:16px;border:1px solid var(--line);border-radius:14px;background:var(--surface)}
+.also div{display:flex;gap:14px;align-items:flex-start;padding:20px 22px;border-left:1px solid var(--line)}
+.also div:first-child{border-left:0}
+.also svg{flex:0 0 34px;width:34px;height:34px;color:var(--accent)}
+.also b{display:block;font-family:var(--f-display);font-size:16px;margin-bottom:3px}
+.also span{color:var(--muted);font-size:13px;line-height:1.45}
+.pr{position:relative;color:#fff;background:#0A1712;isolation:isolate;overflow:hidden}
+.pr-bg{position:absolute;inset:0;z-index:-2;background:url("img/dusk-land.jpg") center 60%/cover no-repeat;opacity:.55}
+.pr::before{content:"";position:absolute;inset:0;z-index:-1;background:linear-gradient(180deg,rgba(7,16,12,.92),rgba(7,16,12,.7) 50%,rgba(7,16,12,.92))}
+.pr .s-wrap{padding-block:84px}
+.pr h2.s-h{color:#fff;font-family:var(--f-display);font-weight:900;font-size:clamp(28px,3.6vw,46px);line-height:1.04;letter-spacing:-.02em;margin:8px 0 12px;text-wrap:balance} .pr .s-sub{font-size:16px;line-height:1.55;max-width:42em;margin:0} .pr .s-sub{color:#B9C9C0} .pr .eyebrow{color:var(--signal);letter-spacing:.18em}
+.pr ol{list-style:none;margin:40px 0 0;padding:0;display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:0;counter-reset:st}
+.pr li{position:relative;padding:0 26px 0 0;display:flex;flex-direction:column;gap:10px}
+.pr li::before{counter-increment:st;content:"0" counter(st);font-family:var(--f-display);font-weight:900;font-size:64px;line-height:.9;color:transparent;-webkit-text-stroke:1.5px var(--signal)}
+.pr li::after{content:"";position:absolute;top:30px;left:96px;right:12px;height:1px;background:rgba(255,255,255,.18)}
+.pr li:last-child::after{display:none}
+.pr h3{font-family:var(--f-display);font-weight:800;font-size:19px;margin:6px 0 0}
+.pr p{margin:0;color:#BDCDC4;line-height:1.55;font-size:14.5px}
+.lay{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:34px 26px;margin-top:8px}
+.lay figure{margin:0;display:flex;flex-direction:column;gap:12px}
+.lay .plate-wrap{background:linear-gradient(160deg,#E7ECE8,#D3DBD5);border-radius:12px;padding:30px 26px;display:grid;place-items:center}
+.lay svg{width:100%;height:auto;filter:drop-shadow(0 14px 16px rgba(10,30,20,.25))}
+.lay figcaption{font-size:13px;color:var(--muted)} .lay figcaption b{color:var(--ink);font-size:14px;display:block}
+.ab{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:56px;align-items:center}
+.ab-photo{position:relative;border-radius:16px;overflow:hidden;aspect-ratio:4/5;max-width:100%}
+.ab-photo img{width:100%;height:100%;object-fit:cover;display:block}
+.ab-photo span{position:absolute;left:18px;bottom:16px;background:rgba(7,16,12,.75);color:#fff;font-size:12px;letter-spacing:.12em;text-transform:uppercase;font-weight:700;padding:7px 10px;border-radius:6px}
+.ab p{font-size:16.5px;line-height:1.7;margin:0 0 16px;max-width:36em}
+.ab dl{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:18px 26px;margin:26px 0 0;padding-top:24px;border-top:1px solid var(--line)}
+.ab dt{font-size:11px;letter-spacing:.1em;text-transform:uppercase;color:var(--muted);font-weight:700}
+.ab dd{margin:4px 0 0;font-weight:700}
+.cta2{position:relative;color:#fff;isolation:isolate;overflow:hidden;background:#1a120c}
+.cta2-bg{position:absolute;inset:0;z-index:-2;background:url("img/palms-sunset.jpg") center 70%/cover no-repeat}
+.cta2::before{content:"";position:absolute;inset:0;z-index:-1;background:linear-gradient(90deg,rgba(10,8,6,.85),rgba(10,8,6,.35))}
+.cta2 .s-wrap{padding-block:96px;display:flex;flex-wrap:wrap;gap:28px 60px;align-items:center;justify-content:space-between}
+.cta2 h2{font-family:var(--f-display);font-weight:900;font-size:clamp(32px,4.6vw,60px);line-height:.98;letter-spacing:-.025em;margin:0;max-width:13em;text-wrap:balance}
+.cta2 p{margin:12px 0 0;color:#E6DCCF;font-size:16px}
+.cred{font-size:11px;color:#7D9488}
+@media (max-width:960px){
+  .hx .s-wrap{grid-template-columns:minmax(0,1fr);min-height:0;padding-block:72px 0}
+  .hx-copy{padding-bottom:10px}
+  .hx-sign{justify-self:center;width:min(420px,92%)}
+  .st .s-wrap{grid-template-columns:repeat(2,minmax(0,1fr));gap:30px 0}
+  .st div:nth-child(3){border-left:0;padding-left:0}
+  .sv-head,.ab{grid-template-columns:minmax(0,1fr)}
+  .bento{grid-template-columns:1fr 1fr;grid-template-rows:auto}
+  .tile{min-height:260px} .tile.a{grid-row:auto;grid-column:span 2} .tile.b{grid-column:span 2}
+  .pr ol{grid-template-columns:repeat(2,minmax(0,1fr));gap:34px 0}
+  .pr li::after{display:none}
+  .lay{grid-template-columns:repeat(2,minmax(0,1fr))}
+  .ab-photo{aspect-ratio:16/10}
+}
+@media (max-width:620px){
+  .bento,.also,.pr ol,.lay{grid-template-columns:minmax(0,1fr)}
+  .tile.a,.tile.b{grid-column:auto}
+  .also div{border-left:0;border-top:1px solid var(--line)} .also div:first-child{border-top:0}
+  .lg-row{justify-content:flex-start}
+  .lg-row img{max-width:120px}
+  .ab dl{grid-template-columns:minmax(0,1fr)}
+  .hx-chip{left:0}
+}
+</style>
+</head><body>
+
+<div id="site" hidden></div>
+<div class="app" id="appRoot">
+  <aside class="rail">
+    <div class="brand"><b id="brandName">C&amp;S Graphics</b><span>Post &amp; Panel ops</span></div>
+    <nav class="nav" id="nav" aria-label="Sections"></nav>
+    <div class="foot">
+      <div id="modeNote">Staging · sample data · open access</div>
+      <button type="button" data-act="goSite">View the public website</button>
+      <button type="button" data-act="resetDemo">Reset sample data</button>
+    </div>
+  </aside>
+  <div style="min-width:0;display:flex;flex-direction:column">
+    <header class="top">
+      <h1 id="title">Dashboard</h1>
+      <div class="viewas">
+        <span class="staging" id="stagingPill">Staging · no login</span>
+        <label for="roleSel">View as</label>
+        <select id="roleSel" class="inp" style="width:auto"></select>
+        <select id="acctSel" class="inp" style="width:auto" aria-label="Customer account"></select>
+      </div>
+    </header>
+    <main id="main"></main>
+  </div>
+</div>
+<div id="modalRoot"></div>
+<div id="toastRoot"></div>
+
+<script>
+/* ============================================================
+   CONFIG — edit before deploying
+   ============================================================ */
+const CONFIG = {
+  brand: 'C&S Graphics',                // trade name acquired with the business
+  backend: 'demo',                      // 'demo' (in-browser sample data) | 'firebase'
+  firebase: null,                       // paste Firebase web config object here for 'firebase'
+  ops: { installDays:[5,6], capacityPerDay:14, balanceNetDays:15, digNoticeBusinessDays:2 },
+};
+const SITE = {
+  name:'C&S Graphics', since:1989, logo:null,            // logo: path or data URI of the real logo file
+  address:'1335 N. B Street, Tampa, FL 33606',
+  phone:'(813) 000-0000', email:'orders@yourdomain.com', // replace before launch
+  serviceArea:'Hillsborough, Pinellas, Pasco, Polk and Manatee counties',
+  clients:[ {name:'Pulte Homes',logo:'img/clients/pulte.svg',h:42}, {name:'Homes by WestBay',logo:'img/clients/westbay.svg',h:40}, {name:'University of Tampa',logo:'img/clients/ut.svg',h:40}, {name:'CBRE',logo:'img/clients/cbre.svg',h:24}, {name:'Eshenbaugh Land Company',logo:'img/clients/eshenbaugh.png',h:46} ],
+  photos:[],   // install photos: [{src:'img/x.jpg', title:'', caption:''}]; illustrations show until these are added
+};
+const DATA_VERSION = 4;
+const LSKEY = 'postpanel.v'+DATA_VERSION;
+
+/* ============================================================
+   COST MODEL — default values; all editable in Price book
+   price = round_up( direct cost × (1 + overhead) ÷ (1 − target margin), roundTo )
+   ============================================================ */
+const DEFAULT_PB = {
+  id:'pricebook',
+  materials:{
+    acm48:     {name:'ACM sheet 3mm, 4×8',            unit:'sheet', cost:70},
+    mdo48:     {name:'MDO plywood 3/4", 4×8',         unit:'sheet', cost:62},
+    printVinyl:{name:'Printable adhesive vinyl',      unit:'SF',    cost:0.55},
+    laminate:  {name:'Overlaminate',                  unit:'SF',    cost:0.45},
+    ink:       {name:'Ink (UV / solvent)',            unit:'SF',    cost:0.20},
+    banner13:  {name:'13 oz banner vinyl',            unit:'SF',    cost:0.45},
+    grommet:   {name:'Hem tape + grommets',           unit:'SF',    cost:0.15},
+    panelPaint:{name:'Sign enamel for MDO faces',     unit:'panel', cost:18},
+    post4x4:   {name:'4×4×10 treated post',           unit:'each',  cost:24},
+    postPaint: {name:'Post paint',                    unit:'post',  cost:3.5},
+    hardware:  {name:'Hardware kit (lags, brackets)', unit:'kit',   cost:6},
+    truckMile: {name:'Truck + fuel',                  unit:'mile',  cost:0.75},
+  },
+  labor:{ rate:38, overheadPct:0.12, wastePct:0.15, roundTo:5, crew:1, mph:35, routeShare:0.6, addlSignMin:30, postReusePct:0.65, repaintMin:10 },
+  margins:{ panels:0.50, posts:0.35, banners:0.50, install:0.58, removal:0.50 },
+  products:[
+    {id:'ACM48DS', name:'4×8 ACM panel, double-sided', cat:'panels', w:8,h:4, sides:2, substrate:'acm48', sheets:1,   print:'mounted', laborMin:65, posts:'PK48'},
+    {id:'ACM48SS', name:'4×8 ACM panel, single-sided', cat:'panels', w:8,h:4, sides:1, substrate:'acm48', sheets:1,   print:'mounted', laborMin:50, posts:'PK48'},
+    {id:'MDO48DS', name:'4×8 MDO panel, painted, double-sided', cat:'panels', w:8,h:4, sides:2, substrate:'mdo48', sheets:1, print:'mounted', laborMin:70, extras:[{mat:'panelPaint',qty:1}], posts:'PK48'},
+    {id:'REFACE48', name:'Reface your existing 4×8 panel, double-sided', cat:'panels', w:8,h:4, sides:2, substrate:null, sheets:0, print:'mounted', laborMin:35, posts:null},
+    {id:'RIDER18', name:'1×8 rider, ACM', cat:'panels', w:8,h:1, sides:1, substrate:'acm48', sheets:0.125, print:'mounted', laborMin:15, posts:null},
+    {id:'ACM46DS', name:'4×6 ACM panel, double-sided', cat:'panels', w:6,h:4, sides:2, substrate:'acm48', sheets:1,   print:'mounted', laborMin:55, posts:'PK46'},
+    {id:'ACM44DS', name:'4×4 ACM panel, double-sided', cat:'panels', w:4,h:4, sides:2, substrate:'acm48', sheets:0.5, print:'mounted', laborMin:45, posts:'PK44'},
+    {id:'ACM34DS', name:'3×4 ACM panel, double-sided', cat:'panels', w:4,h:3, sides:2, substrate:'acm48', sheets:0.5, print:'mounted', laborMin:40, posts:'PK34'},
+    {id:'ACMCUST', name:'Custom-size ACM, double-sided', cat:'panels', custom:true, sides:2, substrate:'acm48', print:'mounted', laborMin:30, laborPerSF:1.1, min:195, maxSF:50, posts:'auto'},
+    {id:'BANNER',  name:'13 oz vinyl banner, hemmed and grommeted', cat:'banners', custom:true, sides:1, print:'direct', laborMin:15, laborPerSF:0.4, extras:[{mat:'banner13',perSF:true},{mat:'grommet',perSF:true}], min:95, maxSF:200, posts:null},
+  ],
+  posts:[
+    {id:'PK48', name:'Post package for 4×8', posts:2, laborMin:25},
+    {id:'PK46', name:'Post package for 4×6', posts:2, laborMin:22},
+    {id:'PK44', name:'Post package for 4×4', posts:2, laborMin:20},
+    {id:'PK34', name:'Post package for 3×4', posts:2, laborMin:18},
+  ],
+  zones:[
+    {id:1, maxMi:15, billMi:10, installMin:45, removalMin:30},
+    {id:2, maxMi:30, billMi:22, installMin:45, removalMin:30},
+    {id:3, maxMi:50, billMi:40, installMin:50, removalMin:35},
+  ],
+  benchmarks:[
+    {name:'FastSigns: 4×8 ACM, 2 black posts, install', when:'Oct 2025', theirs:700, productId:'ACM48DS', posts:true, ful:'install'},
+    {name:'FastSigns: 6mm ACM, 2 painted posts, install', when:'Feb 2026', theirs:610, productId:'ACM48DS', posts:true, ful:'install'},
+    {name:'FastSigns: 4×8 MDO, 2 posts, install', when:'May 2023', theirs:550, productId:'MDO48DS', posts:true, ful:'install'},
+    {name:'FastSigns: reface existing panel, install', when:'2020 (latest)', theirs:260, productId:'REFACE48', posts:false, ful:'install'},
+  ],
+  policy:{ depositPct:0.5, rushPct:0.25, taxRate:0.075, extraProofFee:45, includedProofRounds:2, quoteValidDays:30 },
+  tiers:[
+    {id:'standard', name:'Standard', discount:0,     freeRemoval:false, rule:'Default for every account'},
+    {id:'program',  name:'Program',  discount:0,     freeRemoval:true,  rule:'6 or more orders in the trailing 12 months'},
+    {id:'builder',  name:'Builder',  discount:0.075, freeRemoval:true,  rule:'$50,000 or more billed in the trailing 12 months'},
+  ],
+};
+
+const CITIES = [['Tampa',4],['Westshore',6],['Temple Terrace',10],['Brandon',13],['Lutz',15],['Riverview',16],['Oldsmar',16],['Land O\' Lakes',21],['St. Petersburg',22],['Apollo Beach',22],['Largo',23],['Clearwater',24],['Plant City',25],['Wesley Chapel',26],['Ruskin',26],['Zephyrhills',34],['Lakeland',37],['Bradenton',44],['Spring Hill',46],['Brooksville',49],['Sarasota',58],['Orlando',84]];
+const STAGES = [['quote','Quote'],['deposit','Deposit due'],['design','In design'],['proof','Proof out'],['print','Printing'],['build','Building'],['ready','Ready'],['done','Complete']];
+const STAGE_IX = Object.fromEntries(STAGES.map((s,i)=>[s[0],i]));
+const HEADLINES = ['FOR SALE','FOR LEASE','AVAILABLE','NOW LEASING','NOW SELLING','COMING SOON','SOLD'];
+
+/* ============================================================
+   ROLES — nav visibility + allowed actions. Becomes the auth model at cutover.
+   ============================================================ */
+const NAV = {
+  home:'Website', signin:'Client login',
+  dashboard:'Dashboard', intake:'Order intake', orders:'Orders', design:'Design & print', shop:'Shop', installs:'Installs & removals',
+  inventory:'Inventory', ar:'Receivables', accounts:'Accounts', pricebook:'Price book', sops:'SOPs', automations:'Automations',
+  c_quote:'Get a price', c_orders:'My orders', c_proofs:'Proofs', c_invoices:'Invoices', c_field:'Signs in the field', c_files:'Files',
+};
+const ROLES = {
+  public:    {label:'Public website',    nav:['home','signin']},
+  owner:     {label:'Owner (admin)',     nav:['dashboard','intake','orders','design','shop','installs','inventory','ar','accounts','pricebook','sops','automations']},
+  am:        {label:'Account manager',   nav:['intake','orders','accounts','installs','ar','sops']},
+  designer:  {label:'Designer / print',  nav:['design','orders','sops']},
+  shop:      {label:'Shop / build',      nav:['shop','inventory','sops']},
+  installer: {label:'Installer',         nav:['installs','sops']},
+  bookkeeper:{label:'Bookkeeper',        nav:['ar','accounts','automations']},
+  customer:  {label:'Customer portal',   nav:['c_quote','c_orders','c_proofs','c_invoices','c_field','c_files']},
+};
+const CAN = {
+  am:['sendDeposit','recordPay','approveProxy','pickup','createOrder','remind'],
+  designer:['sendProof','markPrinted'],
+  shop:['markBuilt','pickup','refurb','receive'],
+  installer:['closeout','removal'],
+  bookkeeper:['recordPay','remind'],
+  customer:['custApprove','custPay','custRemoval','createOrder'],
+};
+const can = a => state.role==='owner' || (CAN[state.role]||[]).includes(a);
+
+/* ============================================================
+   HELPERS
+   ============================================================ */
+const $ = s => document.querySelector(s);
+const esc = s => String(s ?? '').replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+const money = n => (n<0?'−':'')+'$'+Math.abs(Number(n||0)).toLocaleString('en-US',{minimumFractionDigits:2,maximumFractionDigits:2});
+const money0 = n => (n<0?'−':'')+'$'+Math.abs(Math.round(n||0)).toLocaleString('en-US');
+const pct = n => (n*100).toFixed(n*100 % 1 ? 1 : 0)+'%';
+const r2 = n => Math.round(n*100)/100;
+const roundUp = (n, step) => step>0 ? Math.ceil(n/step - 1e-9)*step : r2(n);
+const now = () => new Date();
+const iso = d => { const x=new Date(d); return `${x.getFullYear()}-${String(x.getMonth()+1).padStart(2,'0')}-${String(x.getDate()).padStart(2,'0')}`; };
+const addDays = (d,n) => { const x=new Date(d); x.setDate(x.getDate()+n); return x; };
+const parseD = s => new Date(s.length===10 ? s+'T12:00:00' : s);
+const fmtD = s => s ? parseD(s).toLocaleDateString('en-US',{month:'short',day:'numeric'}) : '—';
+const fmtDow = s => s ? parseD(s).toLocaleDateString('en-US',{weekday:'short',month:'short',day:'numeric'}) : '—';
+const daysSince = s => Math.floor((now()-parseD(s))/86400000);
+const addBusinessDays = (d,n) => { let x=new Date(d); let k=0; while(k<n){ x=addDays(x,1); if(x.getDay()!==0 && x.getDay()!==6) k++; } return x; };
+const rid = () => Math.random().toString(36).slice(2,8);
+const cityMiles = c => (CITIES.find(x=>x[0]===c)||[c,0])[1];
+
+/* ============================================================
+   STORE — demo (localStorage) or Firestore. Same API either way.
+   ============================================================ */
+const COLS = ['accounts','orders','invoices','fieldSigns','inventory','log','settings','history'];
+const Store = {
+  d:{}, fb:null, ready:false,
+  async init(){
+    if (CONFIG.backend==='firebase' && CONFIG.firebase) return this.initFirebase();
+    let saved=null; try { saved = JSON.parse(localStorage.getItem(LSKEY)); } catch(e) {}
+    this.d = saved && saved.d ? saved.d : seed();
+    this.ready = true; this.save();
+  },
+  all(c){ return this.d[c] || []; },
+  get(c,id){ return this.all(c).find(x=>x.id===id); },
+  put(c,doc){
+    const a = this.d[c] || (this.d[c]=[]);
+    const i = a.findIndex(x=>x.id===doc.id); if (i>=0) a[i]=doc; else a.push(doc);
+    if (this.fb) this.fb.collection(c).doc(doc.id).set(JSON.parse(JSON.stringify(doc)));
+    else this.save();
+    return doc;
+  },
+  save(){ try { localStorage.setItem(LSKEY, JSON.stringify({d:this.d})); } catch(e) {} },
+  reset(){ if (this.fb) { toast('Reset is disabled on the live database'); return; } this.d = seed(); this.save(); },
+  async initFirebase(){
+    const v='10.12.2', base=`https://www.gstatic.com/firebasejs/${v}/`;
+    for (const f of ['firebase-app-compat.js','firebase-auth-compat.js','firebase-firestore-compat.js','firebase-storage-compat.js'])
+      await new Promise((res,rej)=>{ const s=document.createElement('script'); s.src=base+f; s.onload=res; s.onerror=rej; document.head.appendChild(s); });
+    firebase.initializeApp(CONFIG.firebase);
+    this.fb = firebase.firestore(); this.storage = firebase.storage();
+    $('#stagingPill').textContent = 'Staging · admin login';
+    $('#modeNote').textContent = 'Connected to Firebase';
+    return new Promise(resolve => {
+      firebase.auth().onAuthStateChanged(user => {
+        if (!user) { renderLogin(); return; }
+        let pending = COLS.length;
+        COLS.forEach(c => this.fb.collection(c).onSnapshot(snap => {
+          this.d[c] = snap.docs.map(d=>d.data());
+          if (pending>0 && --pending===0) { this.ready=true; resolve(); }
+          if (this.ready) render();
+        }, err => { $('#main').innerHTML = `<div class="alert bad">Database access denied for ${esc(user.email)}. Ask the owner to grant your account a role. (${esc(err.message)})</div>`; }));
+      });
+    });
+  },
+};
+async function uploadFile(file, path){
+  if (Store.storage) {
+    const ref = Store.storage.ref(path+'/'+Date.now()+'-'+file.name);
+    await ref.put(file); return { name:file.name, url: await ref.getDownloadURL() };
+  }
+  return { name:file.name, url:URL.createObjectURL(file), demo:true };
+}
+function renderLogin(){
+  $('#main').innerHTML = `<div class="card" style="max-width:420px"><h2>Sign in</h2><p class="muted">Staging is restricted to the owner account while views are designed.</p><button class="btn primary" type="button" id="gLogin">Sign in with Google</button></div>`;
+  $('#gLogin').onclick = () => firebase.auth().signInWithPopup(new firebase.auth.GoogleAuthProvider());
+}
+function setting(id){ return Store.get('settings',id) || {}; }
+function nextId(prefix){
+  const seq = setting('seq'); seq.id='seq'; seq[prefix]=(seq[prefix]||1000)+1; Store.put('settings',seq); return `${prefix}-${seq[prefix]}`;
+}
+function logEvt(event, detail, ref){ Store.put('log',{id:'L'+Date.now()+rid(), at:new Date().toISOString(), event, detail, ref:ref||'', actor:ROLES[state.role].label}); }
+
+/* ============================================================
+   PRICING ENGINE
+   ============================================================ */
+const PB = () => Store.get('settings','pricebook') || DEFAULT_PB;
+const prod = id => PB().products.find(p=>p.id===id);
+const loaded = direct => direct*(1+PB().labor.overheadPct);
+const priceFrom = (direct, cat) => roundUp(loaded(direct)/(1-PB().margins[cat]), PB().labor.roundTo);
+
+function panelCost(p, w, h){
+  const pb=PB(), m=pb.materials, L=pb.labor; const area = w*h;
+  let mat = 0;
+  if (p.substrate) mat += (p.custom ? area/32*(1+L.wastePct) : p.sheets) * m[p.substrate].cost;
+  if (p.print==='mounted') mat += area*p.sides*(m.printVinyl.cost+m.laminate.cost+m.ink.cost);
+  if (p.print==='direct')  mat += area*p.sides*m.ink.cost;
+  (p.extras||[]).forEach(e => mat += (e.perSF ? area : (e.qty||1)) * m[e.mat].cost);
+  const min = p.laborMin + (p.laborPerSF||0)*area;
+  const labor = min/60*L.rate;
+  return { mat, min, labor, direct: mat+labor, area };
+}
+function panelPrice(p, w, h){
+  const c = panelCost(p, w, h);
+  let price = priceFrom(c.direct, p.cat);
+  if (p.min) price = Math.max(price, p.min);
+  return { ...c, price, margin: 1 - loaded(c.direct)/price };
+}
+function postPkg(id){
+  const pb=PB(), m=pb.materials, k=pb.posts.find(x=>x.id===id);
+  const r = pb.labor.postReusePct||0;
+  const perPost = (1-r)*m.post4x4.cost + m.postPaint.cost;                 // new posts bought only for the share not covered by returns
+  const mat = k.posts*perPost + m.hardware.cost;
+  const labor = (k.laborMin + k.posts*r*(pb.labor.repaintMin||0))/60*pb.labor.rate; const direct = mat+labor; const price = priceFrom(direct,'posts');
+  return { ...k, mat, labor, direct, price, margin: 1-loaded(direct)/price };
+}
+function autoPkg(area){ return area<=12 ? 'PK34' : area<=16 ? 'PK44' : area<=24 ? 'PK46' : 'PK48'; }
+function zoneFor(miles){ return PB().zones.find(z=>miles<=z.maxMi) || null; }
+function tripCost(z, onsiteMin){
+  const L=PB().labor, m=PB().materials;
+  const driveMin = z.billMi*2/L.mph*60*L.routeShare;
+  const labor = (onsiteMin+driveMin)/60*L.rate*L.crew;
+  const truck = z.billMi*2*L.routeShare*m.truckMile.cost;
+  return { driveMin, labor, truck, direct: labor+truck };
+}
+function zonePrice(z){
+  const ins = tripCost(z, z.installMin), rem = tripCost(z, z.removalMin);
+  const iP = priceFrom(ins.direct,'install'), rP = priceFrom(rem.direct,'removal');
+  const addl = PB().labor.addlSignMin/60*PB().labor.rate*PB().labor.crew; const aP = priceFrom(addl,'install');
+  return { install:iP, removal:rP, addl:aP, installCost:loaded(ins.direct), removalCost:loaded(rem.direct), addlCost:loaded(addl), ins, rem };
+}
+
+function trailing(acctId){
+  const a = Store.get('accounts',acctId) || {hist12:{orders:0,billed:0}};
+  const cutoff = addDays(now(),-365);
+  const live = Store.all('orders').filter(o=>o.accountId===acctId && o.stage!=='quote' && parseD(o.createdAt)>=cutoff && !o.legacy);
+  const billed = Store.all('invoices').filter(i=>i.accountId===acctId && !i.legacy && parseD(i.issuedAt)>=cutoff).reduce((s,i)=>s+i.amount,0);
+  return { orders:(a.hist12?.orders||0)+live.length, billed:(a.hist12?.billed||0)+billed };
+}
+function tierOf(acctId){
+  const t = trailing(acctId), tiers = PB().tiers;
+  if (t.billed>=50000) return tiers.find(x=>x.id==='builder');
+  if (t.orders>=6) return tiers.find(x=>x.id==='program');
+  return tiers.find(x=>x.id==='standard');
+}
+
+function quote(q, acctId){
+  const pb=PB(), p=prod(q.productId), pol=pb.policy; const qty=Math.max(1, parseInt(q.qty)||1);
+  const tier = tierOf(acctId); const lines=[]; const issues=[]; let cost=0;
+  const w = p.custom ? Math.max(1, +q.w||0) : p.w, h = p.custom ? Math.max(1, +q.h||0) : p.h;
+  const pp = panelPrice(p, w, h);
+  if (p.custom && pp.area > p.maxSF) issues.push(`Over ${p.maxSF} SF needs a custom quote.`);
+  lines.push({ label: p.name + (p.custom ? ` · ${w}′×${h}′ (${pp.area} SF)` : ''), qty, unit:pp.price, amt:pp.price*qty, kind:'panel' });
+  cost += loaded(pp.direct)*qty;
+  let goods = pp.price*qty;
+  const pkgId = p.posts==='auto' ? autoPkg(pp.area) : p.posts;
+  if (pkgId && q.includePosts) {
+    const k = postPkg(pkgId);
+    lines.push({ label:k.name+` (${k.posts} painted 4×4 posts, hardware)`, qty, unit:k.price, amt:k.price*qty, kind:'posts' });
+    cost += loaded(k.direct)*qty; goods += k.price*qty;
+  }
+  if (tier.discount) { const d = -r2(goods*tier.discount); lines.push({ label:`${tier.name} account discount (${pct(tier.discount)})`, qty:1, unit:d, amt:d, kind:'disc' }); goods += d; }
+  if (q.rush) { const r = r2(goods*pol.rushPct); lines.push({ label:`Rush production (${pct(pol.rushPct)})`, qty:1, unit:r, amt:r, kind:'rush' }); }
+  const miles = cityMiles(q.city); const zone = zoneFor(miles);
+  let zp = null;
+  if (q.fulfillment==='install') {
+    if (!zone) issues.push(`${q.city} is ${miles} mi out, past the last install zone. We'll quote this install by hand.`);
+    else {
+      zp = zonePrice(zone);
+      const first = zp.install, addl = zp.addl*(qty-1);
+      lines.push({ label:`Install, Zone ${zone.id} (${q.city}, ${miles} mi)`, qty:1, unit:first, amt:first, kind:'install' });
+      cost += zp.installCost;
+      if (qty>1) { lines.push({ label:`Additional sign, same site`, qty:qty-1, unit:zp.addl, amt:addl, kind:'install' }); cost += zp.addlCost*(qty-1); }
+    }
+  } else lines.push({ label:'Customer pickup at shop', qty:1, unit:0, amt:0, kind:'pickup' });
+  const sub = r2(lines.reduce((s,l)=>s+l.amt,0));
+  const tax = r2(sub*pol.taxRate);
+  const total = r2(sub+tax);
+  const deposit = r2(total*pol.depositPct);
+  const removal = !zone ? null : tier.freeRemoval ? 0 : (zp||zonePrice(zone)).removal;
+  return { lines, sub, tax, total, deposit, balance:r2(total-deposit), zone, miles, tier, removal, issues, cost:r2(cost), margin: sub ? 1 - cost/sub : 0, w, h, qty };
+}
+
+/* ============================================================
+   AUTOMATIONS — every state change runs through here and logs what fired
+   ============================================================ */
+function nextInstallDay(from){
+  let d = new Date(from); d.setHours(12,0,0,0);
+  for (let i=0;i<90;i++){ if (CONFIG.ops.installDays.includes(d.getDay()) && loadOn(iso(d)) < CONFIG.ops.capacityPerDay) return iso(d); d=addDays(d,1); }
+  return iso(d);
+}
+function loadOn(k){
+  return Store.all('orders').filter(o=>o.stage==='ready'&&o.fulfillment==='install'&&o.scheduledDate===k).reduce((s,o)=>s+o.qty,0)
+       + Store.all('fieldSigns').filter(f=>f.status==='removal_scheduled'&&f.removalDate===k).length;
+}
+function issueInvoice(o, kind, amount, note){
+  const net = kind==='deposit' ? 0 : CONFIG.ops.balanceNetDays;
+  const inv = { id:nextId('INV'), orderId:o?.id||'', accountId:o?.accountId, kind, amount:r2(amount), status:'open', issuedAt:iso(now()), dueAt:iso(addDays(now(),net)), note:note||'', qbo:'queued' };
+  Store.put('invoices', inv);
+  const a = Store.get('accounts', inv.accountId);
+  logEvt('Invoice issued', `${inv.id} · ${kind} · ${money(inv.amount)} emailed to ${a?.billingEmail||'billing contact'} with pay link`, o?.id);
+  return inv;
+}
+const Auto = {
+  createOrder(q, acctId, stage){
+    const qt = quote(q, acctId); const a = Store.get('accounts',acctId);
+    const o = { id:nextId('SO'), accountId:acctId, contact:q.contact||a.contacts[0].name, street:q.street||'', city:q.city, miles:qt.miles, zone:qt.zone?.id||null,
+      productId:q.productId, w:qt.w, h:qt.h, qty:qt.qty, fulfillment:q.fulfillment, includePosts:!!q.includePosts, rush:!!q.rush,
+      copy:{ headline:q.headline||'FOR SALE', line1:q.line1||'', line2:q.line2||'' },
+      lines:qt.lines, sub:qt.sub, tax:qt.tax, total:qt.total, estCost:qt.cost, extras:[], stage:'quote', proofRound:0, proofs:[], photos:[],
+      createdAt:iso(now()), validUntil:iso(addDays(now(),PB().policy.quoteValidDays)), source:q.source||'portal' };
+    Store.put('orders', o);
+    logEvt('Quote created', `${o.id} · ${money(o.total)} locked until ${fmtD(o.validUntil)} (${o.source})`, o.id);
+    if (stage!=='quote') Auto.sendDeposit(o.id);
+    return o;
+  },
+  sendDeposit(id){
+    const o = Store.get('orders',id); o.stage='deposit'; Store.put('orders',o);
+    issueInvoice(o, 'deposit', o.total*PB().policy.depositPct);
+    logEvt('Order confirmed', `${o.id} moved to deposit due. Reminders scheduled at 24 h and 72 h.`, o.id);
+  },
+  pay(invId, method){
+    const inv = Store.get('invoices',invId); if (!inv || inv.status==='paid') return;
+    inv.status='paid'; inv.paidAt=iso(now()); inv.method=method||'card'; inv.qbo='synced'; Store.put('invoices',inv);
+    logEvt('Payment received', `${inv.id} · ${money(inv.amount)} by ${inv.method}. Synced to QuickBooks.`, inv.orderId);
+    const o = Store.get('orders', inv.orderId);
+    if (o && inv.kind==='deposit' && o.stage==='deposit') { o.stage='design'; o.depositPaidAt=iso(now()); Store.put('orders',o); logEvt('Released to design', `${o.id} entered the design queue. Designer notified.`, o.id); }
+  },
+  sendProof(id, file){
+    const o = Store.get('orders',id); o.proofRound++; o.stage='proof';
+    o.proofs.push({ v:o.proofRound, at:iso(now()), status:'sent', file: file||null });
+    Store.put('orders',o);
+    logEvt('Proof sent', `${o.id} proof v${o.proofRound} emailed to ${o.contact} with approve / request-changes links`, o.id);
+  },
+  approve(id, by){
+    const o = Store.get('orders',id); const pr = o.proofs[o.proofs.length-1]; if (pr) { pr.status='approved'; pr.by=by; }
+    o.stage='print'; o.approvedAt=iso(now()); Store.put('orders',o);
+    logEvt('Proof approved', `${o.id} v${o.proofRound} approved by ${by}. Added to print queue.`, o.id);
+  },
+  requestChanges(id, note){
+    const o = Store.get('orders',id); const pr = o.proofs[o.proofs.length-1]; if (pr) { pr.status='changes'; pr.note=note; }
+    const pol = PB().policy;
+    if (o.proofRound >= pol.includedProofRounds) { o.extras.push({ label:`Extra proof round (v${o.proofRound+1})`, amt:pol.extraProofFee }); logEvt('Fee added', `${o.id} extra proof round ${money(pol.extraProofFee)} added to balance`, o.id); }
+    o.stage='design'; Store.put('orders',o);
+    logEvt('Changes requested', `${o.id}: "${note||'no note'}". Back to designer.`, o.id);
+  },
+  printed(id){
+    const o = Store.get('orders',id); const p=prod(o.productId); const area=o.w*o.h*o.qty*p.sides;
+    if (p.print==='mounted') { consume('printVinyl', area); consume('laminate', area); }
+    if (p.id==='BANNER') consume('banner13', o.w*o.h*o.qty);
+    o.stage='build'; o.printedAt=iso(now()); Store.put('orders',o);
+    logEvt('Printed', `${o.id} printed (${area} SF). Media drawn from inventory. Sent to shop.`, o.id);
+  },
+  built(id){
+    const o = Store.get('orders',id); const p=prod(o.productId); const notes=[];
+    if (p.substrate==='acm48') {
+      const need = (p.custom ? Math.ceil(o.w*o.h/32) : p.sheets)*o.qty; const rec = invQty('panel_reclaimed'); const useRec = Math.min(rec, Math.floor(need));
+      if (useRec) { consume('panel_reclaimed', useRec); notes.push(`${useRec} reclaimed panel(s)`); }
+      if (need-useRec>0) { consume('acm48', need-useRec); notes.push(`${need-useRec} new ACM sheet(s)`); }
+      const st=setting('stats'); st.id='stats'; st.builds=(st.builds||0)+o.qty; st.reclaimedBuilds=(st.reclaimedBuilds||0)+useRec; Store.put('settings',st);
+    }
+    if (p.substrate==='mdo48') { consume('mdo48', o.qty); notes.push(`${o.qty} MDO sheet(s)`); }
+    if (o.includePosts && p.posts) { consume('post_ready', 2*o.qty); consume('hardware', o.qty); notes.push(`${2*o.qty} posts from stock`); }
+    o.stage='ready'; o.builtAt=iso(now());
+    if (o.fulfillment==='install') {
+      const clear = addBusinessDays(now(), CONFIG.ops.digNoticeBusinessDays);
+      o.locate = { ticket:'811-'+String(Math.floor(1e8+Math.random()*9e8)), requested:iso(now()), clears:iso(clear) };
+      o.scheduledDate = nextInstallDay(addDays(clear,1));
+      logEvt('Locate requested', `${o.id} Sunshine 811 ticket ${o.locate.ticket} filed; clears ${fmtD(o.locate.clears)}`, o.id);
+      logEvt('Install scheduled', `${o.id} routed for ${fmtDow(o.scheduledDate)}. Customer notified.`, o.id);
+    } else logEvt('Ready for pickup', `${o.id} ready. Pickup notice sent to ${o.contact}.`, o.id);
+    Store.put('orders',o);
+    logEvt('Built', `${o.id} built using ${notes.join(', ')||'customer-supplied materials'}`, o.id);
+  },
+  complete(id, how, evidence){
+    const o = Store.get('orders',id); o.stage='done'; o.completedAt=iso(now()); o.completedHow=how;
+    if (evidence?.photo) o.photos.push(evidence.photo);
+    if (evidence?.signedBy) o.signedBy = evidence.signedBy;
+    Store.put('orders',o);
+    const depositAmt = Store.all('invoices').filter(i=>i.orderId===o.id && i.kind==='deposit').reduce((s,i)=>s+i.amount,0);
+    const extras = (o.extras||[]).reduce((s,e)=>s+e.amt,0);
+    issueInvoice(o, 'balance', o.total - depositAmt + r2(extras*(1+PB().policy.taxRate)), extras ? 'Includes extra proof rounds' : '');
+    if (how==='install') {
+      const p = prod(o.productId);
+      for (let i=0;i<o.qty;i++) Store.put('fieldSigns', { id:nextId('FS'), orderId:o.id, accountId:o.accountId, street:o.street, city:o.city, miles:o.miles, zone:o.zone, size:`${o.h}×${o.w}`, productId:o.productId, posts:o.includePosts&&p.posts?2:0, installedAt:iso(now()), status:'in_field', photo:evidence?.photo||null, copy:o.copy.headline });
+      logEvt('Installed', `${o.id} installed with photo on file. ${o.qty} sign(s) added to field map.`, o.id);
+    } else logEvt('Picked up', `${o.id} picked up, signed by ${evidence?.signedBy}.`, o.id);
+  },
+  requestRemoval(fsId){
+    const f = Store.get('fieldSigns',fsId); f.status='removal_scheduled'; f.requestedAt=iso(now());
+    f.removalDate = nextInstallDay(addDays(now(),1));
+    const free = tierOf(f.accountId).freeRemoval; f.removalFee = free ? 0 : zonePrice(zoneFor(f.miles)||PB().zones[2]).removal;
+    Store.put('fieldSigns',f);
+    logEvt('Removal scheduled', `${f.id} at ${f.street}, ${f.city} for ${fmtDow(f.removalDate)} · ${free?'free (Program/Builder account)':money(f.removalFee)}`, f.orderId);
+  },
+  removed(fsId, photo){
+    const f = Store.get('fieldSigns',fsId); f.status='removed'; f.removedAt=iso(now()); if (photo) f.removalPhoto=photo; Store.put('fieldSigns',f);
+    if (f.posts) adjust('post_repaint', f.posts);
+    if (prod(f.productId)?.substrate==='acm48') adjust('panel_reface', 1);
+    logEvt('Removed', `${f.id} picked up. ${f.posts} post(s) to repaint, panel to reface queue.`, f.orderId);
+    if (f.removalFee) issueInvoice({id:f.orderId, accountId:f.accountId}, 'removal', f.removalFee*(1+PB().policy.taxRate));
+  },
+  repaint(n){ n=Math.min(n, invQty('post_repaint')); if(!n) return; consume('post_repaint', n); adjust('post_ready', n); const st=setting('stats'); st.id='stats'; st.postsRepainted=(st.postsRepainted||0)+n; Store.put('settings',st); logEvt('Posts repainted', `${n} posts repainted and returned to stock`); },
+  reface(n){ n=Math.min(n, invQty('panel_reface')); if(!n) return; consume('panel_reface', n); adjust('panel_reclaimed', n); logEvt('Panels refaced', `${n} panels stripped and returned as reclaimed substrate`); },
+  receive(itemId, n){ adjust(itemId, n); if (itemId==='post_ready') { const st=setting('stats'); st.id='stats'; st.postsNew=(st.postsNew||0)+n; Store.put('settings',st); } const it=Store.get('inventory',itemId); it.alerted=false; Store.put('inventory',it); logEvt('Stock received', `${n} ${it.unit} of ${it.name}`); },
+};
+function invQty(id){ return Store.get('inventory',id)?.qty || 0; }
+function adjust(id, n){ const it=Store.get('inventory',id); if(!it) return; it.qty=r2(it.qty+n); Store.put('inventory',it); }
+function consume(id, n){
+  const it=Store.get('inventory',id); if(!it) return; it.qty=r2(it.qty-n); Store.put('inventory',it);
+  if (it.min && it.qty<it.min && !it.alerted) { it.alerted=true; Store.put('inventory',it); logEvt('Reorder alert', `${it.name} at ${it.qty} ${it.unit}, below reorder point ${it.min}. PO draft created.`); }
+}
+
+/* ============================================================
+   SAMPLE DATA (fictional) — replace with QuickBooks import at closing
+   ============================================================ */
+function seed(){
+  const d = { accounts:[], orders:[], invoices:[], fieldSigns:[], inventory:[], log:[], settings:[], history:[] };
+  d.settings.push(JSON.parse(JSON.stringify(DEFAULT_PB)));
+  d.settings.push({ id:'seq', SO:1000, INV:5000, FS:300 });
+  d.settings.push({ id:'stats', builds:142, reclaimedBuilds:58, postsRepainted:212, postsNew:96 });
+  const A = [
+    ['A1','Bayline Commercial','Brokerage','bayline.example','#1D3F8F',{orders:14,billed:31200},['Dana Whitfield','Office manager']],
+    ['A2','Gulfgate Realty Partners','Brokerage','gulfgate.example','#8E1B1B',{orders:9,billed:18800},['Marcus Lee','Marketing coordinator']],
+    ['A3','Palmetto Land Advisors','Brokerage','palmettoland.example','#2F5D3A',{orders:3,billed:6900},['Renee Ortiz','Broker']],
+    ['A4','Seabreeze Communities','Homebuilder','seabreeze.example','#0E6E8C',{orders:22,billed:64500},['Tom Becker','Land acquisition PM']],
+    ['A5','Cypress Point Homes','Homebuilder','cypresspoint.example','#6B4E16',{orders:11,billed:52800},['Alicia Grant','Purchasing']],
+    ['A6','Harbor & Main CRE','Brokerage','harbormain.example','#333C47',{orders:3,billed:5200},['Victor Huang','Associate']],
+    ['A7','Sunridge Development','Developer','sunridge.example','#6A3A73',{orders:4,billed:12400},['Priya Nair','Development manager']],
+    ['A8','Tidewater Industrial Brokers','Brokerage','tidewater.example','#24525E',{orders:2,billed:3100},['Sam Okafor','Senior advisor']],
+  ];
+  A.forEach(([id,name,type,domain,color,hist12,[cn,ct]]) => d.accounts.push({ id, name, type, domain, color, hist12, billingEmail:`ap@${domain}`, phone:'(813) 555-0'+(100+parseInt(id.slice(1))*11), contacts:[{name:cn,title:ct,email:cn.split(' ')[0].toLowerCase()+'@'+domain}], migrated:true }));
+  const Store0 = Store.d; Store.d = d; // pricing engine reads settings from d during seed
+  const S = [
+    ['A4','ACM48DS',3,'Wesley Chapel','27400 State Road 54','install','done',48,'NOW SELLING','Seabreeze at Cypress Creek','New homes from the $390s',true],
+    ['A1','ACM48DS',1,'Tampa','4102 W Kennedy Blvd','install','done',35,'FOR LEASE','±12,400 SF Retail','Kennedy Blvd frontage',true],
+    ['A2','ACM48DS',1,'Brandon','1820 W Brandon Blvd','install','done',30,'FOR SALE','±3.1 Acres Commercial','Zoned CG',true],
+    ['A5','ACM48DS',2,'Riverview','11900 Boyette Rd','install','done',26,'COMING SOON','Cypress Point at Boyette','Models open Spring 2027',false],
+    ['A7','MDO48DS',1,'Plant City','2400 James L Redman Pkwy','install','done',20,'AVAILABLE','±48 Acres Industrial','Rail served',false],
+    ['A1','ACM46DS',1,'St. Petersburg','2601 4th St N','install','done',12,'FOR SALE','Office Building ±8,900 SF','Owner-user opportunity',false],
+    ['A3','ACM44DS',2,'Lutz','18500 N Dale Mabry Hwy','pickup','done',9,'FOR SALE','±1.6 Acres','Dale Mabry frontage',false],
+    ['A4','ACM48DS',4,'Land O\' Lakes','21800 State Road 54','install','ready',8,'NOW SELLING','Seabreeze Preserve','Townhomes from the $320s'],
+    ['A2','ACM48DS',1,'Clearwater','2200 Gulf to Bay Blvd','install','ready',7,'FOR LEASE','±5,200 SF Flex','Gulf to Bay frontage'],
+    ['A6','ACM48SS',1,'Tampa','5010 N Florida Ave','pickup','ready',6,'FOR SALE','Mixed-Use Corner','Seminole Heights'],
+    ['A5','ACM48DS',2,'Apollo Beach','6100 US Hwy 41 N','install','build',6,'NOW SELLING','Cypress Point Shores','Waterfront homesites'],
+    ['A1','ACM48DS',1,'Temple Terrace','8800 N 56th St','install','print',5,'FOR SALE','±2.4 Acres','Signalized corner'],
+    ['A7','ACM48DS',1,'Lakeland','3600 Lakeland Hills Blvd','install','proof',4,'AVAILABLE','±22 Acres Mixed-Use','I-4 access'],
+    ['A3','ACM46DS',1,'Oldsmar','3700 Tampa Rd','install','proof',3,'FOR SALE','±0.9 Acre Outparcel','Tampa Rd frontage'],
+    ['A8','ACM48DS',1,'Plant City','1500 Sam Allen Rd','install','design',2,'FOR LEASE','±60,000 SF Warehouse','32′ clear height'],
+    ['A2','BANNER',1,'Tampa','1001 E Kennedy Blvd','pickup','design',1,'NOW LEASING','Channelside Lofts','Studios to 2BR'],
+    ['A6','ACM48DS',1,'Bradenton','4500 Cortez Rd W','install','deposit',1,'FOR SALE','±5 Acres','Cortez Rd frontage'],
+    ['A1','ACM44DS',2,'Brandon','1200 Oakfield Dr','install','quote',0,'FOR SALE','Office Condos','From ±1,400 SF'],
+  ];
+  let so=1000, inv=5000, fs=300;
+  const today = now();
+  S.forEach(([acct,pid,qty,city,street,ful,stage,ago,hl,l1,l2,balPaid]) => {
+    const created = addDays(today,-ago); const p = DEFAULT_PB.products.find(x=>x.id===pid);
+    const qIn = { productId:pid, qty, w:pid==='BANNER'?10:p.w, h:pid==='BANNER'?4:p.h, fulfillment:ful, city, includePosts:pid!=='BANNER', rush:false };
+    const qt = quote(qIn, acct);
+    const a = d.accounts.find(x=>x.id===acct);
+    const o = { id:`SO-${++so}`, accountId:acct, contact:a.contacts[0].name, street, city, miles:qt.miles, zone:qt.zone?.id||null, productId:pid, w:qt.w, h:qt.h, qty, fulfillment:ful, includePosts:qIn.includePosts, rush:false,
+      copy:{headline:hl,line1:l1,line2:l2}, lines:qt.lines, sub:qt.sub, tax:qt.tax, total:qt.total, estCost:qt.cost, extras:[], stage, proofRound:0, proofs:[], photos:[],
+      createdAt:iso(created), validUntil:iso(addDays(created,30)), source: ago%3===0?'email (AI intake)':'portal' };
+    const si = STAGE_IX[stage];
+    if (si>=STAGE_IX.design) { o.depositPaidAt=iso(addDays(created,1)); d.invoices.push({ id:`INV-${++inv}`, orderId:o.id, accountId:acct, kind:'deposit', amount:r2(o.total/2), status:'paid', issuedAt:iso(created), dueAt:iso(created), paidAt:o.depositPaidAt, method:'ACH', qbo:'synced' }); }
+    if (stage==='deposit') d.invoices.push({ id:`INV-${++inv}`, orderId:o.id, accountId:acct, kind:'deposit', amount:r2(o.total/2), status:'open', issuedAt:iso(created), dueAt:iso(created), qbo:'synced' });
+    if (si>=STAGE_IX.proof) { o.proofRound=1; o.proofs.push({v:1, at:iso(addDays(created,1)), status: si>STAGE_IX.proof?'approved':'sent', by: si>STAGE_IX.proof?o.contact:undefined}); }
+    if (si>=STAGE_IX.ready && ful==='install') { o.locate={ticket:'811-'+(286400000+so*37), requested:iso(addDays(created,3)), clears:iso(addBusinessDays(addDays(created,3),2))}; o.scheduledDate = iso(addDays(today, so%2)); }
+    if (stage==='done') {
+      const comp = addDays(created,7); o.completedAt=iso(comp); o.completedHow=ful; o.scheduledDate=iso(comp);
+      if (ful==='pickup') o.signedBy=o.contact;
+      d.invoices.push({ id:`INV-${++inv}`, orderId:o.id, accountId:acct, kind:'balance', amount:r2(o.total-o.total/2), status:balPaid?'paid':'open', issuedAt:iso(comp), dueAt:iso(addDays(comp,15)), paidAt:balPaid?iso(addDays(comp,9)):undefined, method:balPaid?'card':undefined, qbo:'synced' });
+      if (ful==='install') for (let i=0;i<qty;i++) d.fieldSigns.push({ id:`FS-${++fs}`, orderId:o.id, accountId:acct, street, city, miles:qt.miles, zone:qt.zone?.id, size:`${p.h}×${p.w}`, productId:pid, posts:2, installedAt:iso(comp), status:'in_field', copy:hl });
+    }
+    d.orders.push(o);
+  });
+  // Legacy signs already in the ground, migrated from the seller's paper records
+  const L = [['A1','Tampa','3300 W Cypress St'],['A1','Westshore','4950 W Kennedy Blvd'],['A2','Largo','10500 Ulmerton Rd'],['A2','St. Petersburg','3400 Tyrone Blvd N'],['A4','Wesley Chapel','5800 Overpass Rd'],['A4','Zephyrhills','38000 Chancey Rd'],['A4','Lutz','2100 Sunlake Blvd'],['A5','Riverview','13100 Big Bend Rd'],['A5','Ruskin','1500 College Ave E'],['A5','Plant City','3500 Park Rd'],['A7','Lakeland','5100 Drane Field Rd'],['A3','Brandon','2900 Lithia Pinecrest Rd'],['A6','Tampa','7800 N Nebraska Ave'],['A8','Plant City','2800 Airport Rd'],['A4','Land O\' Lakes','4300 Collier Pkwy'],['A1','Temple Terrace','11300 N 56th St']];
+  L.forEach(([acct,city,street],i) => d.fieldSigns.push({ id:`FS-${++fs}`, orderId:'legacy', accountId:acct, street, city, miles:cityMiles(city), zone:(DEFAULT_PB.zones.find(z=>cityMiles(city)<=z.maxMi)||{}).id, size:'4×8', productId:'ACM48DS', posts:2, installedAt:iso(addDays(today,-(70+i*13))), status: i===2?'removal_scheduled':'in_field', removalDate: i===2?iso(addDays(today,1)):undefined, removalFee:0, copy:'FOR SALE', legacy:true }));
+  d.invoices.push({ id:`INV-${++inv}`, orderId:'legacy', accountId:'A6', kind:'balance', amount:1240, status:'open', issuedAt:iso(addDays(today,-64)), dueAt:iso(addDays(today,-49)), note:'Migrated open balance from seller QuickBooks', qbo:'synced', legacy:true });
+  d.settings.find(s=>s.id==='seq').SO=so; d.settings.find(s=>s.id==='seq').INV=inv; d.settings.find(s=>s.id==='seq').FS=fs;
+  const I = [
+    ['post_ready','Posts, painted, ready','posts','post4x4',46,30],['post_repaint','Posts, returned, need repaint','posts','postPaint',18,0],
+    ['acm48','ACM sheets 4×8, new','panels','acm48',22,15],['panel_reclaimed','Panels, refaced, ready to reuse','panels','acm48',6,0],['panel_reface','Panels, returned, need reface','panels',null,9,0],['mdo48','MDO sheets 4×8','panels','mdo48',6,4],
+    ['printVinyl','Printable adhesive vinyl','consumables','printVinyl',1450,600],['laminate','Overlaminate','consumables','laminate',1300,600],['banner13','13 oz banner vinyl','consumables','banner13',380,250],['postPaint_gal','Post paint','consumables',null,7,5],['hardware','Hardware kits','consumables','hardware',40,25],
+  ];
+  const unit = {posts:'posts', panels:'sheets', consumables:'SF'};
+  I.forEach(([id,name,group,mat,qty,min]) => d.inventory.push({ id, name, group, mat, qty, min, unit: id==='postPaint_gal'?'gal':id==='hardware'?'kits':unit[group] }));
+  // 11 prior months of revenue (sample) + current month-to-date carry-in
+  const base=[44,41,38,46,52,55,49,47,51,53,48];
+  for (let i=11;i>=1;i--){ const m=new Date(today.getFullYear(), today.getMonth()-i, 1); d.history.push({ id:iso(m).slice(0,7), revenue: base[11-i]*1000+((i*137)%900) }); }
+  d.history.push({ id:iso(today).slice(0,7), revenue:16400 });
+  const ev = [['Imported','16 field signs and 8 accounts migrated from seller records'],['Invoice issued','INV-5016 deposit emailed to ap@harbormain.example'],['Proof sent','SO-1014 proof v1 emailed to Renee Ortiz'],['Install scheduled','SO-1008 routed for this Friday']];
+  ev.forEach(([e,t],i)=>d.log.push({ id:'L'+i, at:addDays(today,-(4-i)).toISOString(), event:e, detail:t, ref:'', actor:'System' }));
+  Store.d = Store0;
+  return d;
+}
+
+/* ============================================================
+   STATE + RENDER
+   ============================================================ */
+const state = { role:'public', view:'home', acct:'A1', openOrder:null, filter:'active', pending:{}, quote:null, intake:null, poQty:{} };
+try { const s = JSON.parse(localStorage.getItem('postpanel.ui2')||'{}'); Object.assign(state, {role:s.role||'public', view:s.view||'home', acct:s.acct||'A1'}); } catch(e){}
+function saveUi(){ try { localStorage.setItem('postpanel.ui2', JSON.stringify({role:state.role, view:state.view, acct:state.acct})); } catch(e){} }
+function freshQuote(){ return { productId:'ACM48DS', qty:1, w:8, h:4, fulfillment:'install', city:'Tampa', street:'', includePosts:true, rush:false, headline:'FOR SALE', line1:'', line2:'' }; }
+state.quote = freshQuote();
+
+const acctName = id => Store.get('accounts',id)?.name || '—';
+const myOrders = () => Store.all('orders').filter(o=>o.accountId===state.acct);
+const stagePill = o => {
+  const lab = o.stage==='ready' ? (o.fulfillment==='install' ? 'Install '+fmtD(o.scheduledDate) : 'Ready for pickup') : STAGES[STAGE_IX[o.stage]][1];
+  const cls = {quote:'', deposit:'warn', design:'info', proof:'warn', print:'info', build:'info', ready:'acc', done:'good'}[o.stage];
+  return `<span class="pill ${cls}">${esc(lab)}</span>`;
+};
+const invPill = i => i.status==='paid' ? `<span class="pill good">Paid ${fmtD(i.paidAt)}</span>` : daysSince(i.dueAt)>0 ? `<span class="pill bad">${daysSince(i.dueAt)} d past due</span>` : `<span class="pill warn">Due ${fmtD(i.dueAt)}</span>`;
+function balanceOf(o){ const inv=Store.all('invoices').filter(i=>i.orderId===o.id); return { paid: inv.filter(i=>i.status==='paid').reduce((s,i)=>s+i.amount,0), open: inv.filter(i=>i.status==='open').reduce((s,i)=>s+i.amount,0) }; }
+
+function counts(){
+  const o=Store.all('orders');
+  return {
+    design: o.filter(x=>x.stage==='design'||x.stage==='print').length,
+    shop: o.filter(x=>x.stage==='build').length + (invQty('post_repaint')>0?1:0),
+    installs: Store.all('orders').filter(x=>x.stage==='ready'&&x.fulfillment==='install').length + Store.all('fieldSigns').filter(f=>f.status==='removal_scheduled').length,
+    ar: Store.all('invoices').filter(i=>i.status==='open').length,
+    intake: 0,
+    orders: o.filter(x=>x.stage!=='done').length,
+    c_proofs: myOrders().filter(x=>x.stage==='proof').length,
+    c_invoices: Store.all('invoices').filter(i=>i.accountId===state.acct&&i.status==='open').length,
+  };
+}
+
+function render(){
+  if (!Store.ready) return;
+  const site = state.role==='public';
+  $('#site').hidden = !site; $('#appRoot').hidden = site;
+  if (site) {
+    if (!['home','signin'].includes(state.view)) state.view='home';
+    $('#site').innerHTML = VIEWS[state.view](); $('#modalRoot').innerHTML=''; document.title = SITE.name; saveUi(); return;
+  }
+  document.title = 'Post & Panel';
+  const role = ROLES[state.role];
+  if (!role.nav.includes(state.view)) state.view = role.nav[0];
+  $('#brandName').textContent = CONFIG.brand;
+  const ct = counts();
+  $('#nav').innerHTML = role.nav.map(v => `<button type="button" data-act="nav" data-v="${v}" ${v===state.view?'aria-current="page"':''}><span>${esc(NAV[v])}</span>${ct[v]?`<span class="ct">${ct[v]}</span>`:''}</button>`).join('');
+  $('#roleSel').innerHTML = Object.entries(ROLES).map(([k,r])=>`<option value="${k}" ${k===state.role?'selected':''}>${esc(r.label)}</option>`).join('');
+  $('#acctSel').hidden = state.role!=='customer';
+  $('#acctSel').innerHTML = Store.all('accounts').map(a=>`<option value="${a.id}" ${a.id===state.acct?'selected':''}>${esc(a.name)}</option>`).join('');
+  $('#title').textContent = state.role==='customer' ? `${acctName(state.acct)} · ${NAV[state.view]}` : NAV[state.view];
+  $('#main').innerHTML = VIEWS[state.view]();
+  renderModal();
+  saveUi();
+}
+function toast(msg){ $('#toastRoot').innerHTML = `<div class="toast" role="status">${esc(msg)}</div>`; clearTimeout(toast.t); toast.t=setTimeout(()=>$('#toastRoot').innerHTML='', 2600); }
+
+/* ---------- shared fragments ---------- */
+function linesTable(lines, sub, tax, total, extras){
+  return `<table class="lines">${lines.map(l=>`<tr><td>${esc(l.label)}${l.qty>1?` <span class="muted">× ${l.qty} @ ${money(l.unit)}</span>`:''}</td><td class="r">${money(l.amt)}</td></tr>`).join('')}
+    ${(extras||[]).map(e=>`<tr><td>${esc(e.label)}</td><td class="r">${money(e.amt)}</td></tr>`).join('')}
+    <tr><td class="muted">Subtotal</td><td class="r">${money(sub)}</td></tr>
+    <tr><td class="muted">FL sales tax (${pct(PB().policy.taxRate)})</td><td class="r">${money(tax)}</td></tr>
+    <tr class="tot"><td>Total</td><td class="r">${money(total)}</td></tr></table>`;
+}
+function track(o){
+  const steps = [['Quote',0],['Deposit',1],['Design',2],['Proof',3],['Production',5],[o.fulfillment==='install'?'Install':'Pickup',6],['Complete',7]];
+  const si = STAGE_IX[o.stage];
+  return `<div class="track" aria-label="Order progress">${steps.map(([l,ix],k)=>{ const nextIx = steps[k+1]?.[1] ?? 99; const cls = si>=nextIx || (o.stage==='done') ? 'done' : si>=ix ? 'now' : ''; return `<span class="${cls}">${l}</span>`; }).join('')}</div>`;
+}
+function proofSVG(o){
+  const a = Store.get('accounts',o.accountId) || {color:'#333',name:''};
+  const W=400, H=Math.round(W*o.h/o.w);
+  const fit = (t, max, base) => Math.min(base, max*1.75/Math.max(4,(t||'').length));
+  const c = o.copy;
+  return `<svg viewBox="0 0 ${W} ${H}" class="proof" role="img" aria-label="Proof v${o.proofRound||1} of ${esc(c.headline)} sign for ${esc(a.name)}">
+    <rect width="${W}" height="${H}" fill="#ffffff"/>
+    <rect width="${W}" height="${H*0.3}" fill="${a.color}"/>
+    <text x="${W/2}" y="${H*0.205}" text-anchor="middle" font-family="Overpass,Arial,sans-serif" font-weight="900" font-size="${fit(c.headline,W,H*0.17)}" fill="#ffffff" letter-spacing="2">${esc(c.headline)}</text>
+    <text x="${W/2}" y="${H*0.47}" text-anchor="middle" font-family="Overpass,Arial,sans-serif" font-weight="800" font-size="${fit(c.line1,W,H*0.11)}" fill="#111111">${esc(c.line1)}</text>
+    <text x="${W/2}" y="${H*0.6}" text-anchor="middle" font-family="Overpass,Arial,sans-serif" font-weight="600" font-size="${fit(c.line2,W,H*0.07)}" fill="#333333">${esc(c.line2)}</text>
+    <rect y="${H*0.72}" width="${W}" height="${H*0.28}" fill="#eef0ee"/>
+    <text x="14" y="${H*0.89}" font-family="Overpass,Arial,sans-serif" font-weight="900" font-size="${fit(a.name,W*0.55,H*0.075)}" fill="${a.color}">${esc(a.name.toUpperCase())}</text>
+    <text x="${W-14}" y="${H*0.89}" text-anchor="end" font-family="Overpass Mono,monospace" font-weight="600" font-size="${H*0.07}" fill="#111111">${esc(a.phone||'')}</text>
+  </svg>`;
+}
+
+/* ---------- OWNER DASHBOARD ---------- */
+function vDashboard(){
+  const inv=Store.all('invoices'), ord=Store.all('orders'), fsg=Store.all('fieldSigns');
+  const mk = iso(now()).slice(0,7);
+  const liveMonth = inv.filter(i=>i.status==='paid' && (i.paidAt||'').startsWith(mk)).reduce((s,i)=>s+i.amount,0);
+  const hist = Store.all('history').slice().sort((a,b)=>a.id<b.id?-1:1).slice(-12).map(h=>({...h, revenue: h.id===mk ? h.revenue+liveMonth : h.revenue}));
+  const mtd = hist.find(h=>h.id===mk)?.revenue||0;
+  const backlog = ord.filter(o=>STAGE_IX[o.stage]>=1 && o.stage!=='done').reduce((s,o)=>s+o.total,0);
+  const open = inv.filter(i=>i.status==='open'); const ar = open.reduce((s,i)=>s+i.amount,0); const ar30 = open.filter(i=>daysSince(i.dueAt)>30).reduce((s,i)=>s+i.amount,0);
+  const inField = fsg.filter(f=>f.status!=='removed').length;
+  const done = ord.filter(o=>o.stage==='done' && o.depositPaidAt); const tat = done.length ? done.reduce((s,o)=>s+(parseD(o.completedAt)-parseD(o.depositPaidAt))/86400000,0)/done.length : 0;
+  const st = setting('stats'); const reuse = st.builds ? st.reclaimedBuilds/st.builds : 0; const postReuse = (st.postsRepainted+st.postsNew) ? st.postsRepainted/(st.postsRepainted+st.postsNew) : 0;
+  const recent = ord.filter(o=>o.estCost && o.stage!=='quote'); const gm = recent.length ? 1 - recent.reduce((s,o)=>s+o.estCost,0)/recent.reduce((s,o)=>s+o.sub,0) : 0;
+  const attention = [];
+  ord.filter(o=>o.stage==='proof' && daysSince(o.proofs.at(-1).at)>=2).forEach(o=>attention.push(['warn',`${o.id} proof out ${daysSince(o.proofs.at(-1).at)} days with ${acctName(o.accountId)}`,o.id]));
+  ord.filter(o=>o.stage==='deposit').forEach(o=>attention.push(['warn',`${o.id} waiting on ${money(o.total/2)} deposit from ${acctName(o.accountId)}`,o.id]));
+  open.filter(i=>daysSince(i.dueAt)>0).forEach(i=>attention.push(['bad',`${i.id} ${money(i.amount)} ${daysSince(i.dueAt)} days past due · ${acctName(i.accountId)}`,i.orderId]));
+  Store.all('inventory').filter(i=>i.min && i.qty<i.min).forEach(i=>attention.push(['bad',`${i.name} below reorder point (${i.qty} of ${i.min} ${i.unit})`,'']));
+  const max = Math.max(...hist.map(h=>h.revenue))*1.1; const cw=640, ch=200, pad=34, bw=(cw-pad)/hist.length;
+  const ticks=[0,max/2,max].map(v=>Math.round(v/10000)*10000);
+  const stageCounts = STAGES.slice(1,7).map(([k,l])=>[l, ord.filter(o=>o.stage===k).length]); const sMax=Math.max(1,...stageCounts.map(s=>s[1]));
+  return `
+  <div class="kpis">
+    <div class="kpi"><span class="eyebrow">Revenue MTD</span><span class="v">${money0(mtd)}</span><span class="s">cash collected</span></div>
+    <div class="kpi"><span class="eyebrow">Backlog</span><span class="v">${money0(backlog)}</span><span class="s">${ord.filter(o=>STAGE_IX[o.stage]>=1&&o.stage!=='done').length} confirmed orders</span></div>
+    <div class="kpi"><span class="eyebrow">Open AR</span><span class="v">${money0(ar)}</span><span class="s">${money0(ar30)} over 30 days late</span></div>
+    <div class="kpi"><span class="eyebrow">Est. gross margin</span><span class="v">${pct(gm)}</span><span class="s">on live orders, from cost model</span></div>
+    <div class="kpi"><span class="eyebrow">Deposit → done</span><span class="v">${tat.toFixed(1)} d</span><span class="s">average turnaround</span></div>
+    <div class="kpi"><span class="eyebrow">Signs in field</span><span class="v">${inField}</span><span class="s">${pct(reuse)} panels / ${pct(postReuse)} posts reused</span></div>
+  </div>
+  <div class="grid2">
+    <section class="card"><div class="card-h"><h2>Monthly revenue</h2><span class="pill">Sample history · replace with QuickBooks import</span></div>
+      <div style="overflow-x:auto"><svg viewBox="0 0 ${cw} ${ch+24}" width="100%" role="img" aria-label="Monthly revenue, last 12 months">
+        ${ticks.map(t=>{const y=ch-(t/max)*ch; return `<line class="ax" x1="${pad}" x2="${cw}" y1="${y}" y2="${y}"/><text class="lbl" x="${pad-4}" y="${y+3}" text-anchor="end">${t/1000}k</text>`}).join('')}
+        ${hist.map((h,i)=>{const bh=h.revenue/max*ch, x=pad+i*bw+4; return `<rect class="bar ${h.id===mk?'cur':''}" x="${x}" y="${ch-bh}" width="${bw-8}" height="${bh}" rx="2"/><text class="lbl" x="${x+(bw-8)/2}" y="${ch+15}" text-anchor="middle">${parseD(h.id+'-15').toLocaleDateString('en-US',{month:'short'})}</text>${i===hist.length-2||h.id===mk?`<text class="val" x="${x+(bw-8)/2}" y="${ch-bh-4}" text-anchor="middle">${Math.round(h.revenue/1000)}k</text>`:''}`}).join('')}
+      </svg></div>
+      <p class="note">Current month in amber is month to date.</p>
+    </section>
+    <section class="card"><div class="card-h"><h2>Needs attention</h2><span class="muted">${attention.length} items</span></div>
+      <div class="list">${attention.length?attention.slice(0,8).map(([c,t,ref])=>`<div class="item"><div class="grow"><span>${esc(t)}</span></div>${ref&&ref!=='legacy'?`<button class="btn sm" data-act="open" data-id="${ref}">Open</button>`:`<span class="pill ${c}">${c==='bad'?'Act now':'Watch'}</span>`}</div>`).join(''):'<p class="muted">Nothing is late.</p>'}</div>
+    </section>
+  </div>
+  <div class="grid2">
+    <section class="card"><h2>Pipeline by stage</h2>
+      ${stageCounts.map(([l,n])=>`<div class="bar-row"><span>${l}</span><span class="b"><i style="width:${n/sMax*100}%"></i></span><span class="num">${n}</span></div>`).join('')}
+    </section>
+    <section class="card"><div class="card-h"><h2>Top accounts, trailing 12 months</h2></div>
+      <div class="tbl-wrap"><table class="tbl"><thead><tr><th>Account</th><th>Tier</th><th class="r">Orders</th><th class="r">Billed</th></tr></thead><tbody>
+      ${Store.all('accounts').map(a=>({a,t:trailing(a.id),tier:tierOf(a.id)})).sort((x,y)=>y.t.billed-x.t.billed).slice(0,6).map(({a,t,tier})=>`<tr><td>${esc(a.name)}</td><td><span class="pill ${tier.id==='standard'?'':'acc'}">${tier.name}</span></td><td class="r num">${t.orders}</td><td class="r num">${money0(t.billed)}</td></tr>`).join('')}
+      </tbody></table></div>
+    </section>
+  </div>`;
+}
+
+/* ---------- ORDERS ---------- */
+function vOrders(){
+  const f = state.filter; const all = Store.all('orders').slice().sort((a,b)=>b.id.localeCompare(a.id));
+  const rows = all.filter(o => f==='all' ? true : f==='active' ? o.stage!=='done' : o.stage===f);
+  const chips = [['active','Open'],['all','All'],...STAGES];
+  return `<div class="spread"><div class="chips" role="group" aria-label="Filter by stage">${chips.map(([k,l])=>`<button type="button" class="chip" data-act="filter" data-f="${k}" aria-pressed="${f===k}">${l} <span class="num">${k==='all'?all.length:k==='active'?all.filter(o=>o.stage!=='done').length:all.filter(o=>o.stage===k).length}</span></button>`).join('')}</div>
+  ${can('createOrder')?`<button class="btn primary" data-act="nav" data-v="intake">New order</button>`:''}</div>
+  <div class="tbl-wrap"><table class="tbl"><thead><tr><th>Order</th><th>Account</th><th>Site</th><th>Item</th><th class="r">Qty</th><th>Status</th><th class="r">Total</th><th>Opened</th></tr></thead><tbody>
+  ${rows.map(o=>`<tr class="click" data-act="open" data-id="${o.id}" tabindex="0"><td class="num"><b>${o.id}</b></td><td>${esc(acctName(o.accountId))}</td><td>${esc(o.street)}<br><span class="muted">${esc(o.city)}${o.zone?` · Z${o.zone}`:''}</span></td><td>${esc(prod(o.productId)?.name||o.productId)}</td><td class="r num">${o.qty}</td><td>${stagePill(o)}</td><td class="r num">${money(o.total)}</td><td class="num">${fmtD(o.createdAt)}</td></tr>`).join('') || `<tr><td colspan="8" class="muted">No orders in this stage.</td></tr>`}
+  </tbody></table></div>`;
+}
+
+function orderActions(o){
+  const b=[]; const btn=(act,label,primary,extra='')=>b.push(`<button class="btn ${primary?'primary':''}" data-act="${act}" data-id="${o.id}" ${extra}>${label}</button>`);
+  if (o.stage==='quote' && can('sendDeposit')) btn('sendDeposit','Confirm and send deposit invoice',true);
+  if (o.stage==='deposit' && can('recordPay')) { const i=Store.all('invoices').find(x=>x.orderId===o.id&&x.kind==='deposit'&&x.status==='open'); if(i) b.push(`<button class="btn primary" data-act="recordPay" data-id="${i.id}">Record deposit payment</button>`); }
+  if (o.stage==='design' && can('sendProof')) btn('sendProof',`Send proof v${o.proofRound+1}`,true);
+  if (o.stage==='proof' && can('approveProxy')) btn('approveProxy','Log phone approval',false);
+  if (o.stage==='print' && can('markPrinted')) btn('markPrinted','Mark printed',true);
+  if (o.stage==='build' && can('markBuilt')) btn('markBuilt','Mark built',true);
+  if (o.stage==='ready' && o.fulfillment==='pickup' && can('pickup')) b.push(`<input class="inp" style="width:180px;padding:7px 10px;border:1px solid var(--line);border-radius:6px;background:var(--bg)" id="sig-${o.id}" placeholder="Picked up by (name)"><button class="btn primary" data-act="pickup" data-id="${o.id}">Mark picked up</button>`);
+  if (o.stage==='ready' && o.fulfillment==='install' && can('closeout')) b.push(`<span class="muted">Close out from Installs with a photo.</span>`);
+  return b.join('');
+}
+function renderModal(){
+  const o = state.openOrder && Store.get('orders', state.openOrder);
+  if (!o) { $('#modalRoot').innerHTML=''; return; }
+  const a = Store.get('accounts',o.accountId); const invs=Store.all('invoices').filter(i=>i.orderId===o.id); const bal=balanceOf(o);
+  const log = Store.all('log').filter(l=>l.ref===o.id).sort((x,y)=>y.at.localeCompare(x.at));
+  const staff = state.role!=='customer';
+  $('#modalRoot').innerHTML = `<div class="modal-bg" data-act="closeModal"><div class="modal" role="dialog" aria-modal="true" aria-label="Order ${o.id}" data-stop="1">
+    <div class="spread"><div><span class="eyebrow">${esc(a.name)}</span><h2 style="font-size:22px">${o.id} · ${esc(o.copy.headline)}</h2></div><button class="btn" data-act="closeModal">Close</button></div>
+    ${track(o)}
+    <div class="grid2">
+      <div class="card"><h3>Site and item</h3><dl class="kv"><dt>Site</dt><dd>${esc(o.street)}, ${esc(o.city)}</dd><dt>Distance</dt><dd>${o.miles} mi${o.zone?` · Zone ${o.zone}`:''}</dd><dt>Item</dt><dd>${esc(prod(o.productId)?.name)} · ${o.h}′×${o.w}′</dd><dt>Qty</dt><dd>${o.qty}</dd><dt>Fulfillment</dt><dd>${o.fulfillment==='install'?'Install':'Customer pickup'}</dd><dt>Contact</dt><dd>${esc(o.contact)}</dd><dt>Source</dt><dd>${esc(o.source)}</dd>
+      ${o.locate?`<dt>811 ticket</dt><dd class="num">${o.locate.ticket} · clears ${fmtD(o.locate.clears)}</dd>`:''}${o.scheduledDate&&o.stage==='ready'?`<dt>Install day</dt><dd>${fmtDow(o.scheduledDate)}</dd>`:''}</dl></div>
+      <div class="card"><h3>Proof v${o.proofRound||0}</h3>${proofSVG(o)}<span class="muted">${o.proofs.map(p=>`v${p.v} ${p.status} ${fmtD(p.at)}${p.note?` – "${esc(p.note)}"`:''}`).join(' · ')||'No proof sent yet'}</span></div>
+    </div>
+    <div class="card"><h3>Price, locked ${fmtD(o.createdAt)}</h3>${linesTable(o.lines,o.sub,o.tax,o.total,o.extras)}
+      <div class="split"><div><span class="eyebrow">Paid</span><b>${money(bal.paid)}</b></div><div><span class="eyebrow">Open</span><b>${money(bal.open)}</b></div></div>
+      ${staff&&state.role==='owner'?`<p class="note">Estimated cost ${money(o.estCost)} · margin ${pct(1-o.estCost/o.sub)} before tax</p>`:''}
+    </div>
+    ${invs.length?`<div class="tbl-wrap"><table class="tbl"><thead><tr><th>Invoice</th><th>Type</th><th class="r">Amount</th><th>Status</th></tr></thead><tbody>${invs.map(i=>`<tr><td class="num">${i.id}</td><td>${i.kind}</td><td class="r num">${money(i.amount)}</td><td>${invPill(i)}</td></tr>`).join('')}</tbody></table></div>`:''}
+    ${staff?`<div class="row">${orderActions(o)}</div>`:''}
+    ${o.photos?.length?`<div class="card"><h3>Install photos</h3>${o.photos.map(p=>p.url?`<img src="${esc(p.url)}" alt="Install photo ${esc(p.name)}" style="max-width:240px;border-radius:4px">`:`<span>${esc(p.name)}</span>`).join('')}</div>`:''}
+    ${staff?`<div class="card"><h3>Activity</h3><div class="list">${log.map(l=>`<div class="item"><div class="grow"><b>${esc(l.event)}</b><span class="muted">${esc(l.detail)}</span></div><span class="muted num">${fmtD(l.at.slice(0,10))}</span></div>`).join('')||'<span class="muted">No activity logged.</span>'}</div></div>`:''}
+  </div></div>`;
+}
+
+/* ---------- INTAKE (AI email parsing) ---------- */
+const SAMPLE_EMAIL = `From: Marcus Lee <marcus@gulfgate.example>
+Subject: Sign for new listing - Gulf to Bay
+
+Hi, need a 4x8 double sided FOR SALE sign at 2650 Gulf to Bay Blvd in Clearwater. It's ±1.8 acres, zoned C. Please install, and we'd like it up next week if possible. Same layout as our usual. Thanks!`;
+function parseEmail(t){
+  const s = t.toLowerCase(); const r = { found:[], missing:[], q:freshQuote() }; const q=r.q;
+  const em = t.match(/[\w.+-]+@([\w-]+\.[\w.-]+)/); const accts = Store.all('accounts');
+  const acct = accts.find(a=>em && em[1].toLowerCase()===a.domain) || accts.find(a=>s.includes(a.name.toLowerCase().split(' ')[0]));
+  r.acct = acct?.id; acct ? r.found.push(`Account: ${acct.name} (${em&&em[1]===acct.domain?'matched sender domain':'matched name'})`) : r.missing.push('Account: not recognized, pick one');
+  const nm = t.match(/From:\s*([^<\n]+)</i); q.contact = nm ? nm[1].trim() : acct?.contacts[0].name;
+  const dm = s.match(/(\d{1,2})\s*(?:'|′|ft|foot)?\s*(?:x|×|by)\s*(\d{1,2})\b/);
+  const isBanner = /banner/.test(s);
+  if (dm) { const a=+dm[1], b=+dm[2]; q.h=Math.min(a,b); q.w=Math.max(a,b); r.found.push(`Size: ${q.h}′×${q.w}′`); } else r.missing.push('Size: assumed 4×8');
+  const key = `${q.h}x${q.w}`;
+  if (isBanner) q.productId='BANNER';
+  else if (key==='4x8') q.productId = /mdo|plywood|wood/.test(s) ? 'MDO48DS' : /single[- ]?sided|one[- ]?sided/.test(s) ? 'ACM48SS' : 'ACM48DS';
+  else if (key==='4x6') q.productId='ACM46DS'; else if (key==='4x4') q.productId='ACM44DS'; else if (key==='3x4') q.productId='ACM34DS'; else q.productId='ACMCUST';
+  r.found.push(`Item: ${prod(q.productId).name}`);
+  const words={one:1,two:2,three:3,four:4,five:5,six:6};
+  const qm = s.match(/\b(\d+|two|three|four|five|six)\s+(?:signs|panels|banners)/); if (qm){ q.qty = words[qm[1]]||+qm[1]; r.found.push(`Quantity: ${q.qty}`); }
+  if (/pick ?up|we'll grab|we will grab|install (it )?ourselves/.test(s)) { q.fulfillment='pickup'; r.found.push('Fulfillment: customer pickup'); } else r.found.push('Fulfillment: install');
+  if (/\brush\b|asap|urgent|by tomorrow/.test(s)) { q.rush=true; r.found.push('Rush: yes'); }
+  const st = t.match(/\b\d{2,6}\s+[A-Za-z0-9 .']+?\b(?:Road|Rd|Street|St|Avenue|Ave|Boulevard|Blvd|Highway|Hwy|Drive|Dr|Parkway|Pkwy|Way|Lane|Ln|Court|Ct)\b\.?/);
+  if (st) { q.street=st[0].replace(/\.$/,''); r.found.push(`Street: ${q.street}`); } else r.missing.push('Street address');
+  const city = CITIES.slice().sort((a,b)=>b[0].length-a[0].length).find(c=>s.includes(c[0].toLowerCase()));
+  if (city) { q.city=city[0]; r.found.push(`City: ${city[0]} (${city[1]} mi)`); } else r.missing.push('City');
+  const hl = HEADLINES.find(h=>s.includes(h.toLowerCase())); if (hl) { q.headline=hl; r.found.push(`Headline: ${hl}`); }
+  const ac = t.match(/±?\s?[\d.,]+\s*(?:acres?|ac\b|sf\b|square feet)/i); if (ac) { q.line1 = ac[0].replace(/^±?\s?/,'±').replace(/\bac\b/i,'Acres').replace(/acres?/i,'Acres'); r.found.push(`Sign copy: ${q.line1}`); }
+  const z = t.match(/zoned\s+([A-Z0-9-]+)/i); if (z) q.line2 = 'Zoned '+z[1].toUpperCase();
+  q.source='email (AI intake)';
+  return r;
+}
+function vIntake(){
+  const it = state.intake || (state.intake = { text:SAMPLE_EMAIL, draft:null });
+  const d = it.draft;
+  return `<div class="grid2">
+    <section class="card"><div class="card-h"><h2>Paste an order email</h2><span class="pill info">AI intake</span></div>
+      <div class="field"><label for="intakeText">Email or call notes</label><textarea id="intakeText" rows="11">${esc(it.text)}</textarea></div>
+      <div class="row"><button class="btn primary" data-act="parseIntake">Draft order</button><button class="btn" data-act="blankIntake">Start from a blank order</button></div>
+      <p class="note">This demo reads the email with pattern matching. In production the same button calls the Claude API through a Cloud Function, which handles messy phrasing, multiple signs and attachments. Staff always review the draft before it is sent.</p>
+    </section>
+    <section class="card">${d ? `<h2>Draft for review</h2>
+      <div class="list">${d.found.map(f=>`<div class="item"><span>${esc(f)}</span><span class="pill good">Read</span></div>`).join('')}${d.missing.map(f=>`<div class="item"><span>${esc(f)}</span><span class="pill warn">Check</span></div>`).join('')}</div>
+      ${quoteForm('intake', d.q, d.acct)}` : `<h2>Draft for review</h2><p class="muted">The draft order appears here with every field it read and anything it could not find.</p>`}
+    </section></div>`;
+}
+
+/* ---------- QUOTE FORM (shared by portal + intake) ---------- */
+function quoteForm(ctx, q, acctId){
+  const pb=PB(); const p=prod(q.productId);
+  const sel = (id,opts,val)=>`<select id="${ctx}-${id}" data-q="${id}" data-ctx="${ctx}">${opts.map(([v,l])=>`<option value="${esc(v)}" ${String(v)===String(val)?'selected':''}>${esc(l)}</option>`).join('')}</select>`;
+  return `<div class="form">
+    ${ctx==='intake'?`<div class="field full"><label for="intake-acct">Account</label>${sel('acct',[['','Choose account'],...Store.all('accounts').map(a=>[a.id,a.name])],acctId||'')}</div>`:''}
+    <div class="field full"><label for="${ctx}-productId">Sign</label>${sel('productId', pb.products.map(x=>[x.id,x.name]), q.productId)}</div>
+    ${p.custom?`<div class="field"><label for="${ctx}-h">Height (ft)</label><input id="${ctx}-h" data-q="h" data-ctx="${ctx}" type="number" min="1" max="20" value="${esc(q.h)}"></div><div class="field"><label for="${ctx}-w">Width (ft)</label><input id="${ctx}-w" data-q="w" data-ctx="${ctx}" type="number" min="1" max="30" value="${esc(q.w)}"></div>`:''}
+    <div class="field"><label for="${ctx}-qty">Quantity at this site</label><input id="${ctx}-qty" data-q="qty" data-ctx="${ctx}" type="number" min="1" max="50" value="${esc(q.qty)}"></div>
+    <div class="field"><label for="${ctx}-fulfillment">Fulfillment</label>${sel('fulfillment',[['install','We install'],['pickup','I\'ll pick up at the shop']],q.fulfillment)}</div>
+    <div class="field full"><label for="${ctx}-street">Site address</label><input id="${ctx}-street" data-q="street" data-ctx="${ctx}" value="${esc(q.street)}" placeholder="Street address"></div>
+    <div class="field"><label for="${ctx}-city">City</label>${sel('city',CITIES.map(c=>[c[0],`${c[0]} · ${c[1]} mi`]),q.city)}</div>
+    <div class="field"><label for="${ctx}-headline">Headline</label>${sel('headline',HEADLINES.map(h=>[h,h]),q.headline)}</div>
+    <div class="field"><label for="${ctx}-line1">Main line</label><input id="${ctx}-line1" data-q="line1" data-ctx="${ctx}" value="${esc(q.line1)}" placeholder="±3.1 Acres Commercial"></div>
+    <div class="field"><label for="${ctx}-line2">Detail line</label><input id="${ctx}-line2" data-q="line2" data-ctx="${ctx}" value="${esc(q.line2)}" placeholder="Zoned CG · 660′ frontage"></div>
+    ${p.posts?`<label class="check"><input type="checkbox" id="${ctx}-includePosts" data-q="includePosts" data-ctx="${ctx}" ${q.includePosts?'checked':''}> Include posts</label>`:'<span></span>'}
+    <label class="check"><input type="checkbox" id="${ctx}-rush" data-q="rush" data-ctx="${ctx}" ${q.rush?'checked':''}> Rush (+${pct(pb.policy.rushPct)})</label>
+  </div><div id="${ctx}-panel">${quotePanel(ctx, q, acctId)}</div>`;
+}
+function quotePanel(ctx, q, acctId){
+  if (!acctId) return `<p class="alert warn">Choose the account to price this order.</p>`;
+  const r = quote(q, acctId); const pol=PB().policy;
+  const owner = state.role==='owner';
+  return `<div class="card" style="background:var(--bg)">
+    <div class="spread"><h3>Your price</h3><span class="pill acc">${esc(r.tier.name)} account</span></div>
+    ${linesTable(r.lines, r.sub, r.tax, r.total)}
+    <div class="split"><div><span class="eyebrow">Deposit today (${pct(pol.depositPct)})</span><b>${money(r.deposit)}</b></div><div><span class="eyebrow">Balance at ${q.fulfillment==='install'?'install':'pickup'}</span><b>${money(r.balance)}</b></div></div>
+    ${r.removal!=null && q.fulfillment==='install' ? `<p class="note">Removal and pickup later: ${r.removal===0?'<b>free</b> for '+esc(r.tier.name)+' accounts':money(r.removal)+' per sign (free on Program accounts)'}. ${pol.includedProofRounds} proof rounds included, ${money(pol.extraProofFee)} each after. Price holds ${pol.quoteValidDays} days.</p>`:''}
+    ${r.issues.map(i=>`<div class="alert warn">${esc(i)}</div>`).join('')}
+    ${owner?`<p class="note">Owner only: est. cost ${money(r.cost)} · margin ${pct(r.margin)}</p>`:''}
+    <div class="row">${r.issues.length?`<button class="btn primary" data-act="requestQuote" data-ctx="${ctx}">Request a custom quote</button>`:
+      ctx==='portal' ? `<button class="btn primary" data-act="portalConfirm">Confirm and pay ${money(r.deposit)} deposit</button><button class="btn" data-act="portalSave">Save quote</button>`
+                     : `<button class="btn primary" data-act="intakeConfirm">Create order and send deposit invoice</button><button class="btn" data-act="intakeSave">Save as quote</button>`}</div>
+  </div>`;
+}
+
+/* ---------- DESIGN ---------- */
+function vDesign(){
+  const o=Store.all('orders');
+  const sect = (title, rows, act, label, fileInput) => `<section class="card"><div class="card-h"><h2>${title}</h2><span class="muted">${rows.length}</span></div><div class="list">${rows.map(x=>`<div class="item"><div class="grow"><b><button class="btn sm" data-act="open" data-id="${x.id}">${x.id}</button> ${esc(acctName(x.accountId))}</b><span>${esc(x.copy.headline)} · ${esc(x.copy.line1)} · ${esc(prod(x.productId).name)} × ${x.qty}</span><span class="muted">${x.stage==='proof'?`v${x.proofRound} sent ${fmtD(x.proofs.at(-1).at)} · waiting ${daysSince(x.proofs.at(-1).at)} d`:x.proofs.at(-1)?.status==='changes'?`Changes: "${esc(x.proofs.at(-1).note)}"`:`Opened ${fmtD(x.createdAt)}`}</span></div>
+      <div class="row">${fileInput?`<label class="btn sm">Attach file<input type="file" hidden data-file="proof" data-id="${x.id}"></label>`:''}${act&&can(act)?`<button class="btn sm primary" data-act="${act}" data-id="${x.id}">${typeof label==='function'?label(x):label}</button>`:''}</div></div>`).join('')||'<p class="muted">Queue is clear.</p>'}</div></section>`;
+  return `<p class="note">Proofs are generated from each account's saved template and the sign copy on the order. The designer reviews, adjusts, and sends. Upload the final art file if the layout was changed by hand.</p>
+  <div class="grid3">
+    ${sect('Needs a proof', o.filter(x=>x.stage==='design'), 'sendProof', x=>`Send proof v${x.proofRound+1}`, true)}
+    ${sect('Waiting on customer', o.filter(x=>x.stage==='proof'), null, '')}
+    ${sect('Print queue', o.filter(x=>x.stage==='print'), 'markPrinted', 'Mark printed')}
+  </div>`;
+}
+
+/* ---------- SHOP ---------- */
+function vShop(){
+  const o=Store.all('orders');
+  const build=o.filter(x=>x.stage==='build'), pick=o.filter(x=>x.stage==='ready'&&x.fulfillment==='pickup');
+  return `<div class="grid2">
+    <section class="card"><div class="card-h"><h2>Build queue</h2><span class="muted">${build.length}</span></div><div class="list">${build.map(x=>{const p=prod(x.productId); return `<div class="item"><div class="grow"><b>${x.id} · ${esc(acctName(x.accountId))}</b><span>${esc(p.name)} × ${x.qty}${x.includePosts&&p.posts?` · ${2*x.qty} posts`:''}</span><span class="muted">Pull reclaimed panels first (${invQty('panel_reclaimed')} on hand)</span></div>${can('markBuilt')?`<button class="btn sm primary" data-act="markBuilt" data-id="${x.id}">Mark built</button>`:''}</div>`}).join('')||'<p class="muted">Nothing to build.</p>'}</div></section>
+    <section class="card"><div class="card-h"><h2>Ready for pickup</h2><span class="muted">${pick.length}</span></div><div class="list">${pick.map(x=>`<div class="item"><div class="grow"><b>${x.id} · ${esc(acctName(x.accountId))}</b><span>${esc(prod(x.productId).name)} × ${x.qty}</span><span class="muted">Balance invoice goes out on signature</span></div><div class="row">${can('pickup')?`<input id="sig-${x.id}" placeholder="Picked up by" style="width:140px;padding:6px 8px;border:1px solid var(--line);border-radius:6px;background:var(--bg)"><button class="btn sm primary" data-act="pickup" data-id="${x.id}">Mark picked up</button>`:''}</div></div>`).join('')||'<p class="muted">Nothing waiting.</p>'}</div></section>
+  </div>
+  <section class="card"><div class="card-h"><h2>Reuse loop</h2><span class="muted">Returned material back into stock</span></div>
+    <div class="grid2">
+      <div class="item"><div class="grow"><b>${invQty('post_repaint')} posts need repaint</b><span class="muted">${invQty('post_ready')} painted posts ready</span></div>${can('refurb')?`<div class="row"><button class="btn sm" data-act="repaint" data-n="10">Repaint 10</button><button class="btn sm primary" data-act="repaint" data-n="999">Repaint all</button></div>`:''}</div>
+      <div class="item"><div class="grow"><b>${invQty('panel_reface')} panels need reface</b><span class="muted">${invQty('panel_reclaimed')} reclaimed panels ready</span></div>${can('refurb')?`<div class="row"><button class="btn sm" data-act="reface" data-n="5">Reface 5</button><button class="btn sm primary" data-act="reface" data-n="999">Reface all</button></div>`:''}</div>
+    </div>
+  </section>`;
+}
+
+/* ---------- INSTALLS ---------- */
+function vInstalls(){
+  const jobs = [];
+  Store.all('orders').filter(o=>o.stage==='ready'&&o.fulfillment==='install').forEach(o=>jobs.push({type:'install', date:o.scheduledDate, o}));
+  Store.all('fieldSigns').filter(f=>f.status==='removal_scheduled').forEach(f=>jobs.push({type:'removal', date:f.removalDate, f}));
+  const byDate = {}; jobs.forEach(j=>(byDate[j.date] ||= []).push(j));
+  const dates = Object.keys(byDate).sort();
+  const t = iso(now());
+  return `<p class="note">Install days: ${CONFIG.ops.installDays.map(d=>['Sun','Mon','Tue','Wed','Thu','Fri','Sat'][d]).join(', ')} · capacity ${CONFIG.ops.capacityPerDay} stops per day. A job cannot close without a site photo. Sunshine 811 locate tickets are filed when the sign is built and must clear before digging.</p>
+  ${dates.map(dt=>`<section class="card"><div class="card-h"><h2>${fmtDow(dt)}${dt===t?' · today':''}</h2><span class="muted">${byDate[dt].length} stop${byDate[dt].length===1?"":"s"} · sorted by zone</span></div><div class="list">
+  ${byDate[dt].sort((a,b)=>((a.o||a.f).zone||9)-((b.o||b.f).zone||9)).map(j=>{
+    if (j.type==='install'){ const o=j.o; const ph=state.pending[o.id]; const clear = !o.locate || parseD(o.locate.clears)<=now();
+      return `<div class="item"><div class="grow"><span><span class="pill acc">Install</span> <b>${esc(o.street)}, ${esc(o.city)}</b></span><span>${o.id} · ${esc(acctName(o.accountId))} · ${esc(prod(o.productId).name)} × ${o.qty} · Zone ${o.zone}</span><span class="muted">811 ticket ${o.locate?.ticket||'—'} ${clear?'cleared':'clears '+fmtD(o.locate.clears)} · contact ${esc(o.contact)}</span></div>
+      ${can('closeout')?`<div class="row"><label class="btn sm">${ph?'Photo: '+esc(ph.name):'Add site photo'}<input type="file" accept="image/*" hidden data-file="closeout" data-id="${o.id}"></label><button class="btn sm primary" data-act="closeout" data-id="${o.id}" ${ph?'':'disabled'}>Close out</button></div>`:''}</div>`; }
+    const f=j.f; const ph=state.pending[f.id];
+    return `<div class="item"><div class="grow"><span><span class="pill warn">Removal</span> <b>${esc(f.street)}, ${esc(f.city)}</b></span><span>${f.id} · ${esc(acctName(f.accountId))} · ${f.size} · ${f.posts} posts · Zone ${f.zone||'—'}</span><span class="muted">${f.removalFee?money(f.removalFee)+' removal fee':'Free removal'} · posts go to repaint, panel to reface</span></div>
+      ${can('removal')?`<div class="row"><label class="btn sm">${ph?'Photo: '+esc(ph.name):'Add photo'}<input type="file" accept="image/*" hidden data-file="removal" data-id="${f.id}"></label><button class="btn sm primary" data-act="removed" data-id="${f.id}" ${ph?'':'disabled'}>Complete removal</button></div>`:''}</div>`;
+  }).join('')}</div></section>`).join('') || '<section class="card"><p class="muted">No installs or removals scheduled.</p></section>'}`;
+}
+
+/* ---------- INVENTORY ---------- */
+function vInventory(){
+  const m = PB().materials; const items = Store.all('inventory');
+  const deployed = Store.all('fieldSigns').filter(f=>f.status!=='removed').reduce((s,f)=>s+f.posts,0);
+  const val = it => it.mat && m[it.mat] ? (it.mat==='postPaint' ? it.qty*0 : it.qty*m[it.mat].cost) : 0;
+  const groups = [['posts','Posts'],['panels','Panels and substrate'],['consumables','Consumables']];
+  return `<div class="kpis" style="grid-template-columns:repeat(4,minmax(0,1fr))">
+    <div class="kpi"><span class="eyebrow">Posts in the field</span><span class="v">${deployed}</span><span class="s">come back on removal</span></div>
+    <div class="kpi"><span class="eyebrow">Posts ready</span><span class="v">${invQty('post_ready')}</span><span class="s">${invQty('post_repaint')} waiting on paint</span></div>
+    <div class="kpi"><span class="eyebrow">Panels reusable</span><span class="v">${invQty('panel_reclaimed')+invQty('panel_reface')}</span><span class="s">vs ${invQty('acm48')} new sheets</span></div>
+    <div class="kpi"><span class="eyebrow">Stock value</span><span class="v">${money0(items.reduce((s,i)=>s+val(i),0))}</span><span class="s">at current material costs</span></div>
+  </div>
+  ${groups.map(([g,l])=>`<section class="card"><h2>${l}</h2><div class="tbl-wrap"><table class="tbl"><thead><tr><th>Item</th><th class="r">On hand</th><th class="r">Reorder at</th><th>Status</th><th class="r">Value</th>${can('receive')?'<th>Receive stock</th>':''}</tr></thead><tbody>
+  ${items.filter(i=>i.group===g).map(i=>`<tr><td>${esc(i.name)}</td><td class="r num">${i.qty} ${esc(i.unit)}</td><td class="r num">${i.min||'—'}</td><td>${i.min&&i.qty<i.min?'<span class="pill bad">Reorder</span>':i.min&&i.qty<i.min*1.25?'<span class="pill warn">Low</span>':'<span class="pill good">OK</span>'}</td><td class="r num">${val(i)?money0(val(i)):'—'}</td>${can('receive')?`<td><div class="row"><input type="number" min="1" id="rcv-${i.id}" value="${i.group==='consumables'?100:10}" style="width:80px"><button class="btn sm" data-act="receive" data-id="${i.id}">Add</button></div></td>`:''}</tr>`).join('')}
+  </tbody></table></div></section>`).join('')}`;
+}
+
+/* ---------- RECEIVABLES ---------- */
+function vAR(){
+  const inv = Store.all('invoices').slice().sort((a,b)=>b.issuedAt.localeCompare(a.issuedAt));
+  const open = inv.filter(i=>i.status==='open');
+  const b = {current:0, d30:0, d60:0, d60p:0}; open.forEach(i=>{ const d=daysSince(i.dueAt); if(d<=0)b.current+=i.amount; else if(d<=30)b.d30+=i.amount; else if(d<=60)b.d60+=i.amount; else b.d60p+=i.amount; });
+  const [tab] = [state.arTab||'open']; const rows = tab==='open'?open:inv;
+  return `<div class="kpis" style="grid-template-columns:repeat(4,minmax(0,1fr))">
+    <div class="kpi"><span class="eyebrow">Current</span><span class="v">${money0(b.current)}</span></div>
+    <div class="kpi"><span class="eyebrow">1–30 days late</span><span class="v">${money0(b.d30)}</span></div>
+    <div class="kpi"><span class="eyebrow">31–60 days late</span><span class="v">${money0(b.d60)}</span></div>
+    <div class="kpi"><span class="eyebrow">Over 60 days</span><span class="v" style="color:${b.d60p?'var(--bad)':'inherit'}">${money0(b.d60p)}</span></div>
+  </div>
+  <div class="chips"><button class="chip" data-act="arTab" data-t="open" aria-pressed="${tab==='open'}">Open (${open.length})</button><button class="chip" data-act="arTab" data-t="all" aria-pressed="${tab==='all'}">All invoices</button></div>
+  <div class="tbl-wrap"><table class="tbl"><thead><tr><th>Invoice</th><th>Account</th><th>Order</th><th>Type</th><th class="r">Amount</th><th>Issued</th><th>Status</th><th>QuickBooks</th><th></th></tr></thead><tbody>
+  ${rows.map(i=>`<tr><td class="num">${i.id}</td><td>${esc(acctName(i.accountId))}</td><td class="num">${i.orderId&&i.orderId!=='legacy'?`<button class="btn sm" data-act="open" data-id="${i.orderId}">${i.orderId}</button>`:'<span class="muted">migrated</span>'}</td><td>${i.kind}</td><td class="r num">${money(i.amount)}</td><td class="num">${fmtD(i.issuedAt)}</td><td>${invPill(i)}</td><td><span class="pill ${i.qbo==='synced'?'good':''}">${i.qbo}</span></td>
+  <td>${i.status==='open'?`<div class="row">${can('remind')?`<button class="btn sm" data-act="remind" data-id="${i.id}">Send reminder</button>`:''}${can('recordPay')?`<button class="btn sm primary" data-act="recordPay" data-id="${i.id}">Record payment</button>`:''}</div>`:''}</td></tr>`).join('')}
+  </tbody></table></div>
+  <p class="note">Deposits are due on receipt and work starts when they clear. Balances are invoiced automatically at install or pickup, due net ${CONFIG.ops.balanceNetDays}. Reminders go out at 3 days before due, on the due date, and every 7 days after. In production, payments arrive through Stripe and post to QuickBooks without manual entry.</p>`;
+}
+
+/* ---------- ACCOUNTS ---------- */
+function vAccounts(){
+  return `<div class="tbl-wrap"><table class="tbl"><thead><tr><th>Account</th><th>Type</th><th>Tier</th><th class="r">Orders 12 mo</th><th class="r">Billed 12 mo</th><th class="r">Signs in field</th><th class="r">Open AR</th><th>Primary contact</th></tr></thead><tbody>
+  ${Store.all('accounts').map(a=>{const t=trailing(a.id), tier=tierOf(a.id); const f=Store.all('fieldSigns').filter(x=>x.accountId===a.id&&x.status!=='removed').length; const ar=Store.all('invoices').filter(i=>i.accountId===a.id&&i.status==='open').reduce((s,i)=>s+i.amount,0);
+    return `<tr><td><span style="display:inline-block;width:10px;height:10px;border-radius:2px;background:${a.color};margin-right:6px"></span><b>${esc(a.name)}</b></td><td>${esc(a.type)}</td><td><span class="pill ${tier.id==='standard'?'':'acc'}">${tier.name}</span></td><td class="r num">${t.orders}</td><td class="r num">${money0(t.billed)}</td><td class="r num">${f}</td><td class="r num">${ar?money0(ar):'—'}</td><td>${esc(a.contacts[0].name)}<br><span class="muted">${esc(a.contacts[0].email)}</span></td></tr>`}).join('')}
+  </tbody></table></div>
+  <p class="note">Tiers are earned automatically from the trailing 12 months and cannot be overridden by staff. ${PB().tiers.map(t=>`<b>${t.name}</b>: ${esc(t.rule)}${t.discount?`, ${pct(t.discount)} off panels and posts`:''}${t.freeRemoval?', free removal':''}.`).join(' ')} Prior-year history is seeded from the seller's QuickBooks.</p>`;
+}
+
+/* ---------- PRICE BOOK (admin cost model) ---------- */
+function vPricebook(){
+  const pb=PB(); const edit = state.role==='owner';
+  const inp = (path, val, step='0.01', wpx=88) => edit ? `<input type="number" step="${step}" data-pb="${path}" value="${val}" aria-label="${esc(path)}" style="width:${wpx}px">` : `<span class="num">${val}</span>`;
+  const mcell = mg => `<span class="pill ${mg<0.3?'bad':mg<0.45?'warn':'good'}">${pct(mg)}</span>`;
+  const ex = quote({...freshQuote(), city:'Tampa'}, 'A3');
+  const exP = Object.fromEntries(pb.products.map(p=>[p.id, panelPrice(p, p.custom?(p.id==='BANNER'?10:8):p.w, p.custom?4:p.h)]));
+  return `
+  <div class="alert info"><div><b>How prices are set.</b> Price = direct cost (materials + labor) × (1 + overhead ${pct(pb.labor.overheadPct)}) ÷ (1 − target margin), rounded up to the next $${pb.labor.roundTo}. Change any cost, rate or margin below and every quote recalculates. Orders already quoted keep the price they were given.</div></div>
+  <div class="grid2">
+    <section class="card"><div class="card-h"><h2>Material costs</h2><span class="muted">update from vendor invoices</span></div>
+      <div class="tbl-wrap"><table class="tbl"><thead><tr><th>Material</th><th>Unit</th><th class="r">Cost</th></tr></thead><tbody>
+      ${Object.entries(pb.materials).map(([k,m])=>`<tr><td>${esc(m.name)}</td><td class="muted">per ${esc(m.unit)}</td><td class="r">${inp(`materials.${k}.cost`, m.cost)}</td></tr>`).join('')}
+      </tbody></table></div></section>
+    <div style="display:flex;flex-direction:column;gap:18px;min-width:0">
+      <section class="card"><h2>Target margins</h2>
+        <div class="tbl-wrap"><table class="tbl"><thead><tr><th>Category</th><th class="r">Target gross margin %</th></tr></thead><tbody>
+        ${Object.entries(pb.margins).map(([k,v])=>`<tr><td style="text-transform:capitalize">${k}</td><td class="r">${inp(`margins.${k}`, r2(v*100), '0.5')}</td></tr>`).join('')}
+        </tbody></table></div></section>
+      <section class="card"><h2>Labor, overhead and routing</h2>
+        <div class="tbl-wrap"><table class="tbl"><tbody>
+          <tr><td>Loaded labor rate ($/hr, wage + taxes + comp)</td><td class="r">${inp('labor.rate', pb.labor.rate,'0.5')}</td></tr>
+          <tr><td>Shop overhead (% of direct cost)</td><td class="r">${inp('labor.overheadPct', r2(pb.labor.overheadPct*100),'0.5')}</td></tr>
+          <tr><td>ACM waste on custom sizes (%)</td><td class="r">${inp('labor.wastePct', r2(pb.labor.wastePct*100),'1')}</td></tr>
+          <tr><td>Round prices up to ($)</td><td class="r">${inp('labor.roundTo', pb.labor.roundTo,'1')}</td></tr>
+          <tr><td>Install crew size</td><td class="r">${inp('labor.crew', pb.labor.crew,'1')}</td></tr>
+          <tr><td>Average drive speed (mph)</td><td class="r">${inp('labor.mph', pb.labor.mph,'1')}</td></tr>
+          <tr><td>Drive time charged per stop (% of round trip)</td><td class="r">${inp('labor.routeShare', r2(pb.labor.routeShare*100),'5')}</td></tr>
+          <tr><td>Extra sign at same site (on-site minutes)</td><td class="r">${inp('labor.addlSignMin', pb.labor.addlSignMin,'5')}</td></tr>
+          <tr><td>Posts supplied from returns (%)</td><td class="r">${inp('labor.postReusePct', r2(pb.labor.postReusePct*100),'5')}</td></tr>
+          <tr><td>Minutes to repaint a returned post</td><td class="r">${inp('labor.repaintMin', pb.labor.repaintMin,'1')}</td></tr>
+        </tbody></table></div></section>
+    </div>
+  </div>
+  <section class="card"><div class="card-h"><h2>Panels and banners</h2><span class="muted">customer price is calculated, not typed</span></div>
+    <div class="tbl-wrap"><table class="tbl"><thead><tr><th>Item</th><th class="r">Sheets</th><th class="r">Labor min</th><th class="r">Labor min / SF</th><th class="r">Minimum $</th><th class="r">Materials</th><th class="r">Labor</th><th class="r">Loaded cost</th><th class="r">Price</th><th>Margin</th></tr></thead><tbody>
+    ${pb.products.map((p,i)=>{const c=exP[p.id]; return `<tr><td>${esc(p.name)}${p.custom?` <span class="muted">(shown at ${p.id==='BANNER'?'4×10':'4×8'})</span>`:''}</td><td class="r">${p.custom?'<span class="muted">by SF</span>':inp(`products.${i}.sheets`, p.sheets,'0.25',70)}</td><td class="r">${inp(`products.${i}.laborMin`, p.laborMin,'5',70)}</td><td class="r">${p.custom?inp(`products.${i}.laborPerSF`, p.laborPerSF,'0.1',70):'—'}</td><td class="r">${p.min!=null?inp(`products.${i}.min`, p.min,'5',80):'—'}</td><td class="r num">${money(c.mat)}</td><td class="r num">${money(c.labor)}</td><td class="r num">${money(loaded(c.direct))}</td><td class="r num"><b>${money0(c.price)}</b></td><td>${mcell(c.margin)}</td></tr>`}).join('')}
+    </tbody></table></div></section>
+  <div class="grid2">
+    <section class="card"><h2>Post packages</h2>
+      <div class="tbl-wrap"><table class="tbl"><thead><tr><th>Package</th><th class="r">Posts</th><th class="r">Labor min</th><th class="r">Loaded cost</th><th class="r">Price</th><th>Margin</th></tr></thead><tbody>
+      ${pb.posts.map((k,i)=>{const c=postPkg(k.id); return `<tr><td>${esc(k.name)}</td><td class="r">${inp(`posts.${i}.posts`, k.posts,'1',60)}</td><td class="r">${inp(`posts.${i}.laborMin`, k.laborMin,'5',60)}</td><td class="r num">${money(loaded(c.direct))}</td><td class="r num"><b>${money0(c.price)}</b></td><td>${mcell(c.margin)}</td></tr>`}).join('')}
+      </tbody></table></div><p class="note">Post cost is blended: ${pct(pb.labor.postReusePct)} of posts come back from removals and only need paint. The more removals you win, the cheaper posts get.</p></section>
+    <section class="card"><h2>Install zones</h2>
+      <div class="tbl-wrap"><table class="tbl"><thead><tr><th>Zone</th><th class="r">Up to mi</th><th class="r">Billed mi</th><th class="r">On-site min</th><th class="r">Removal min</th><th class="r">Install</th><th class="r">Removal</th><th class="r">Each extra sign</th></tr></thead><tbody>
+      ${pb.zones.map((z,i)=>{const zp=zonePrice(z); return `<tr><td>Zone ${z.id}</td><td class="r">${inp(`zones.${i}.maxMi`, z.maxMi,'1',60)}</td><td class="r">${inp(`zones.${i}.billMi`, z.billMi,'1',60)}</td><td class="r">${inp(`zones.${i}.installMin`, z.installMin,'5',60)}</td><td class="r">${inp(`zones.${i}.removalMin`, z.removalMin,'5',60)}</td><td class="r num"><b>${money0(zp.install)}</b></td><td class="r num">${money0(zp.removal)}</td><td class="r num">${money0(zp.addl)}</td></tr>`}).join('')}
+      </tbody></table></div><p class="note">Past Zone ${pb.zones.at(-1).id} (${pb.zones.at(-1).maxMi} mi), installs go to a custom quote. Billed miles is the typical one-way distance for the zone.</p></section>
+  </div>
+  <div class="grid2">
+    <section class="card"><h2>Policies</h2><div class="tbl-wrap"><table class="tbl"><tbody>
+      <tr><td>Deposit at order (%)</td><td class="r">${inp('policy.depositPct', r2(pb.policy.depositPct*100),'5')}</td></tr>
+      <tr><td>Rush surcharge (%)</td><td class="r">${inp('policy.rushPct', r2(pb.policy.rushPct*100),'5')}</td></tr>
+      <tr><td>Sales tax rate (%)</td><td class="r">${inp('policy.taxRate', r2(pb.policy.taxRate*100),'0.25')}</td></tr>
+      <tr><td>Proof rounds included</td><td class="r">${inp('policy.includedProofRounds', pb.policy.includedProofRounds,'1')}</td></tr>
+      <tr><td>Each extra proof round ($)</td><td class="r">${inp('policy.extraProofFee', pb.policy.extraProofFee,'5')}</td></tr>
+      <tr><td>Quote holds (days)</td><td class="r">${inp('policy.quoteValidDays', pb.policy.quoteValidDays,'1')}</td></tr>
+    </tbody></table></div><p class="note">Sales tax: 6% state plus county surtax (Hillsborough 1.5%). Confirm whether installed signs are taxed on the full price with your CPA before launch.</p></section>
+    <section class="card"><div class="card-h"><h2>Against the competition</h2><span class="muted">your recent FastSigns invoices, pre-tax, vs. today's price here (Tampa, Zone 1)</span></div>
+      <div class="tbl-wrap"><table class="tbl"><thead><tr><th>Their order</th><th class="r">Theirs</th><th class="r">Ours</th><th class="r">Gap</th><th>Our margin</th></tr></thead><tbody>
+      ${(pb.benchmarks||[]).map((b,i)=>{ const q=quote({...freshQuote(), productId:b.productId, includePosts:b.posts, fulfillment:b.ful, city:'Tampa'}, null); const gap=q.sub-b.theirs; return `<tr><td>${esc(b.name)}<br><span class="muted">${esc(b.when)}</span></td><td class="r">${inp(`benchmarks.${i}.theirs`, b.theirs,'5',80)}</td><td class="r num"><b>${money0(q.sub)}</b></td><td class="r num"><span class="pill ${gap>0?'bad':'good'}">${gap>0?'+':'−'}${money0(Math.abs(gap))} (${(gap/b.theirs*100).toFixed(0)}%)</span></td><td>${mcell(q.margin)}</td></tr>`}).join('')}
+      </tbody></table></div><p class="note">FastSigns charges extra for removal and doesn't publish prices. Green means we're at or under their price.</p></section>
+    <section class="card"><h2>Check: standard 4×8 installed in Tampa</h2>${linesTable(ex.lines, ex.sub, ex.tax, ex.total)}<p class="note">Estimated cost ${money(ex.cost)} · blended margin ${pct(ex.margin)} before tax. Standard account, Zone 1, posts included.</p></section>
+  </div>`;
+}
+
+/* ---------- SOPs ---------- */
+const SOPS = [
+  ['Intake','Account manager','Portal order, email, or phone call',['Every request becomes an order in the system before any work starts. No exceptions for phone calls.','Email requests: paste into Order intake and review the AI draft.','Price comes from the price book. Staff cannot change it; custom work goes to a written quote.'],'AI drafts the order from email; portal prices instantly.'],
+  ['Deposit','System, bookkeeper on exceptions','Order confirmed',['50% deposit invoice with a card/ACH link goes out automatically.','No design time is spent until the deposit clears.'],'Invoice, reminders at 24 h and 72 h, auto-release to design on payment.'],
+  ['Design and proof','Designer','Deposit paid',['Start from the account template; fill copy from the order.','Proof out within 1 business day.',`${DEFAULT_PB.policy.includedProofRounds} rounds included; the system adds the fee from round 3.`],'Proof email with approve / request-changes buttons. Stale proofs flag at 2 days.'],
+  ['Print','Designer','Proof approved',['Print only the approved version number.','Media use is drawn from inventory automatically.'],'Approval drops the job into the print queue.'],
+  ['Build','Shop','Printed',['Pull reclaimed panels and repainted posts first.','Mark built only when the sign is wrapped and tagged with the order number.'],'811 locate ticket filed and install day assigned on build.'],
+  ['Install or pickup','Installer / shop','Install day or customer arrival',['Confirm the 811 ticket has cleared before digging.','A site photo is required to close the job.','Pickups need the receiver\'s name.'],'Balance invoice issued automatically at closeout; sign added to the field map.'],
+  ['Removal and reuse','Installer, then shop','Customer request in portal',['Free for Program and Builder accounts.','Posts go to the repaint rack, panels to the reface rack.','Shop clears both racks Monday–Thursday.'],'Removal scheduled on the next install day; inventory updated on completion.'],
+  ['Collections','Bookkeeper','Invoice issued',['Reminders run on schedule. Bookkeeper calls anything over 30 days.','Accounts over 60 days go on hold for new orders.'],'Stripe payments post to QuickBooks automatically.'],
+];
+function vSops(){
+  return `<section class="card"><div class="card-h"><h2>Standard operating procedures</h2><span class="muted">each step has one owner, one trigger, and the automation that supports it</span></div>
+  ${SOPS.map(([t,own,trig,steps,auto],i)=>`<div class="sop"><span class="n">${i+1}</span><div style="display:flex;flex-direction:column;gap:4px;min-width:0"><h2>${t}</h2><span class="muted">Owner: <b>${own}</b> · Trigger: ${trig}</span><ul>${steps.map(s=>`<li>${esc(s)}</li>`).join('')}</ul><span class="pill info" style="align-self:flex-start;white-space:normal">Automation: ${esc(auto)}</span></div></div>`).join('')}</section>`;
+}
+
+/* ---------- AUTOMATIONS ---------- */
+function vAutomations(){
+  const log = Store.all('log').slice().sort((a,b)=>b.at.localeCompare(a.at)).slice(0,80);
+  return `<section class="card"><div class="card-h"><h2>Activity log</h2><span class="muted">every automated step and staff action</span></div>
+  <div class="tbl-wrap"><table class="tbl"><thead><tr><th>When</th><th>Event</th><th>Detail</th><th>By</th></tr></thead><tbody>
+  ${log.map(l=>`<tr><td class="num">${new Date(l.at).toLocaleString('en-US',{month:'short',day:'numeric',hour:'numeric',minute:'2-digit'})}</td><td><b>${esc(l.event)}</b></td><td>${esc(l.detail)}</td><td class="muted">${esc(l.actor)}</td></tr>`).join('')}
+  </tbody></table></div></section>`;
+}
+
+/* ---------- CUSTOMER PORTAL ---------- */
+function vCQuote(){
+  const t = tierOf(state.acct);
+  return `<div class="grid2"><section class="card"><div class="card-h"><h2>Price a sign</h2><span class="muted">Prices are fixed and shown before you order.</span></div>${quoteForm('portal', state.quote, state.acct)}</section>
+  <section class="card"><h2>How ordering works</h2><ol style="margin:0;padding-left:18px;display:flex;flex-direction:column;gap:6px">
+    <li>Confirm the price and pay a ${pct(PB().policy.depositPct)} deposit.</li><li>Approve your proof online, usually within one business day.</li><li>We print, build, and install on our next route day, or you pick up.</li><li>The balance is invoiced when the sign is installed or picked up.</li><li>Request removal here when the listing closes. ${t.freeRemoval?'<b>Removal is free on your account.</b>':'Removal is free once you reach Program status (6 orders a year).'}</li></ol></section></div>`;
+}
+function vCOrders(){
+  const o = myOrders().slice().sort((a,b)=>b.id.localeCompare(a.id));
+  return `<div class="list">${o.map(x=>`<section class="card"><div class="spread"><div><span class="eyebrow">${x.id} · ${fmtD(x.createdAt)}</span><h2>${esc(x.copy.headline)} · ${esc(x.street)}, ${esc(x.city)}</h2></div><div class="row">${stagePill(x)}<button class="btn sm" data-act="open" data-id="${x.id}">Details</button></div></div>${track(x)}
+    <div class="spread"><span class="muted">${esc(prod(x.productId).name)} × ${x.qty} · ${money(x.total)}</span>${x.stage==='quote'?`<button class="btn sm primary" data-act="custConfirmQuote" data-id="${x.id}">Confirm and pay deposit</button>`:x.stage==='proof'?`<button class="btn sm primary" data-act="nav" data-v="c_proofs">Review proof</button>`:x.stage==='deposit'?`<button class="btn sm primary" data-act="nav" data-v="c_invoices">Pay deposit</button>`:''}</div></section>`).join('')||'<section class="card"><p class="muted">No orders yet. Use Get a price to start one.</p></section>'}</div>`;
+}
+function vCProofs(){
+  const o = myOrders().filter(x=>x.stage==='proof');
+  return o.map(x=>`<section class="card"><div class="spread"><h2>${x.id} · proof v${x.proofRound}</h2><span class="muted">${esc(x.street)}, ${esc(x.city)}</span></div><div style="max-width:560px">${proofSVG(x)}</div>
+    <div class="field"><label for="chg-${x.id}">Changes needed (optional)</label><input id="chg-${x.id}" placeholder="e.g. Use the Brandon office phone number"></div>
+    <div class="row"><button class="btn primary" data-act="custApprove" data-id="${x.id}">Approve for print</button><button class="btn" data-act="custChanges" data-id="${x.id}">Request changes</button><span class="muted">${x.proofRound>=PB().policy.includedProofRounds?`Another round adds ${money(PB().policy.extraProofFee)}.`:`${PB().policy.includedProofRounds-x.proofRound} free revision${PB().policy.includedProofRounds-x.proofRound===1?'':'s'} left.`}</span></div></section>`).join('') || '<section class="card"><p class="muted">No proofs waiting on you.</p></section>';
+}
+function vCInvoices(){
+  const inv = Store.all('invoices').filter(i=>i.accountId===state.acct).sort((a,b)=>b.issuedAt.localeCompare(a.issuedAt));
+  const open = inv.filter(i=>i.status==='open');
+  return `<div class="spread"><h2>${money(open.reduce((s,i)=>s+i.amount,0))} open on ${open.length} invoice${open.length===1?'':'s'}</h2>${open.length>1?`<button class="btn primary" data-act="payAll">Pay all</button>`:''}</div>
+  <div class="tbl-wrap"><table class="tbl"><thead><tr><th>Invoice</th><th>Order</th><th>Type</th><th class="r">Amount</th><th>Status</th><th></th></tr></thead><tbody>
+  ${inv.map(i=>`<tr><td class="num">${i.id}</td><td class="num">${i.orderId==='legacy'?'Prior balance':i.orderId}</td><td>${i.kind}</td><td class="r num">${money(i.amount)}</td><td>${invPill(i)}</td><td>${i.status==='open'?`<button class="btn sm primary" data-act="custPay" data-id="${i.id}">Pay now</button>`:''}</td></tr>`).join('')||'<tr><td colspan="6" class="muted">No invoices.</td></tr>'}
+  </tbody></table></div><p class="note">Demo: payment is simulated. In production, Pay now opens Stripe Checkout for card or ACH, and saved payment methods are offered on repeat accounts.</p>`;
+}
+function vCField(){
+  const f = Store.all('fieldSigns').filter(x=>x.accountId===state.acct && x.status!=='removed').sort((a,b)=>a.installedAt.localeCompare(b.installedAt));
+  const t=tierOf(state.acct);
+  return `<p class="note">${t.freeRemoval?'Removal is free on your account.':'Removal is billed per sign by zone. Program accounts get free removal.'} Removals run on our next route day.</p>
+  <div class="tbl-wrap"><table class="tbl"><thead><tr><th>Site</th><th>Sign</th><th>Installed</th><th class="r">Days up</th><th>Status</th><th></th></tr></thead><tbody>
+  ${f.map(x=>`<tr><td><b>${esc(x.street)}</b><br><span class="muted">${esc(x.city)}</span></td><td>${esc(x.copy)} · ${x.size}</td><td class="num">${fmtD(x.installedAt)}</td><td class="r num">${daysSince(x.installedAt)}</td><td>${x.status==='in_field'?'<span class="pill good">In the ground</span>':`<span class="pill warn">Removal ${fmtD(x.removalDate)}</span>`}</td><td>${x.status==='in_field'?`<button class="btn sm" data-act="custRemoval" data-id="${x.id}">Request removal${t.freeRemoval?'':' · '+money0(zonePrice(zoneFor(x.miles)||PB().zones[2]).removal)}</button>`:''}</td></tr>`).join('')||'<tr><td colspan="6" class="muted">No signs in the field.</td></tr>'}
+  </tbody></table></div>`;
+}
+function vCFiles(){
+  const o = myOrders().filter(x=>x.proofRound>0).sort((a,b)=>b.id.localeCompare(a.id));
+  return `<p class="note">Every approved proof is saved here for reorders. Pick one to reorder with the same layout.</p><div class="grid3">${o.map(x=>`<section class="card"><span class="eyebrow">${x.id} · v${x.proofRound} · ${fmtD(x.proofs.at(-1).at)}</span>${proofSVG(x)}<span class="muted">${esc(x.street)}, ${esc(x.city)}</span><div class="row"><button class="btn sm" data-act="reorder" data-id="${x.id}">Reorder this layout</button>${x.photos?.length?`<span class="pill good">Install photo on file</span>`:''}</div></section>`).join('')||'<p class="muted">No files yet.</p>'}</div>`;
+}
+
+/* ============================================================
+   PUBLIC WEBSITE
+   ============================================================ */
+function rng(seed){ let x=seed*7919+13; return ()=>{ x=(x*9301+49297)%233280; return x/233280; }; }
+const fitT = (t,w,base) => Math.min(base, w*1.7/Math.max(4,(t||'').length));
+function palm(x, gy, h, f, col){
+  const cx=x+8*f, cy=gy-h;
+  let p=`<path d="M${x} ${gy} Q${x+12*f} ${gy-h*0.55} ${cx} ${cy}" stroke="${col}" stroke-width="${Math.max(3,h/20)}" fill="none" stroke-linecap="round"/>`;
+  [-172,-145,-118,-92,-66,-38,-10].forEach((a,i)=>{ const L=h*(0.34+(i%3)*0.05), r=a*Math.PI/180;
+    const ex=cx+Math.cos(r)*L, ey=cy+Math.sin(r)*L*0.5+L*0.42, mx=cx+Math.cos(r)*L*0.55, my=cy+Math.sin(r)*L*0.55-L*0.1;
+    p+=`<path d="M${cx} ${cy} Q${mx} ${my} ${ex} ${ey}" stroke="${col}" stroke-width="${Math.max(2.4,h/32)}" fill="none" stroke-linecap="round"/>`; });
+  return p;
+}
+function panelArt(x,y,w,h,c,shadow=true){
+  return `${shadow?`<rect x="${x+5}" y="${y+6}" width="${w}" height="${h}" fill="#000" opacity=".2"/>`:''}
+  <rect x="${x}" y="${y}" width="${w}" height="${h}" fill="#ffffff"/>
+  <rect x="${x}" y="${y}" width="${w}" height="${h*0.3}" fill="${c.color}"/>
+  <text x="${x+w/2}" y="${y+h*0.215}" text-anchor="middle" font-family="Overpass,Arial,sans-serif" font-weight="900" font-size="${fitT(c.headline,w,h*0.17)}" fill="#ffffff" letter-spacing="1.5">${esc(c.headline)}</text>
+  <text x="${x+w/2}" y="${y+h*0.5}" text-anchor="middle" font-family="Overpass,Arial,sans-serif" font-weight="800" font-size="${fitT(c.line1,w,h*0.13)}" fill="#111111">${esc(c.line1)}</text>
+  <text x="${x+w/2}" y="${y+h*0.65}" text-anchor="middle" font-family="Overpass,Arial,sans-serif" font-weight="600" font-size="${fitT(c.line2,w,h*0.08)}" fill="#444444">${esc(c.line2)}</text>
+  <rect x="${x}" y="${y+h*0.76}" width="${w}" height="${h*0.24}" fill="#e8ebe8"/>
+  <text x="${x+8}" y="${y+h*0.92}" font-family="Overpass,Arial,sans-serif" font-weight="900" font-size="${h*0.08}" fill="${c.color}">${esc(c.foot||'YOUR BROKERAGE')}</text>
+  <text x="${x+w-8}" y="${y+h*0.92}" text-anchor="end" font-family="Overpass Mono,monospace" font-weight="600" font-size="${h*0.075}" fill="#111111">813-555-0100</text>`;
+}
+const post = (x,y1,y2,w=11) => `<rect x="${x}" y="${y1}" width="${w}" height="${y2-y1}" fill="#f3f3ee" stroke="#c9cbc3" stroke-width="1"/><rect x="${x}" y="${y1}" width="${w}" height="4" fill="#dcdcd4"/>`;
+function scene(o){
+  const W=600, H=400, G=o.G||282, R=rng(o.seed); const id='s'+o.seed;
+  let tl=`M0 ${G}`; for (let x=0;x<=W;x+=18) tl+=` L${x} ${G-10-R()*24-(Math.sin(x/70)+1)*6}`; tl+=` L${W} ${G} Z`;
+  let s = `<svg viewBox="0 0 ${W} ${H}" class="scene" role="img" aria-label="${esc(o.alt)}"><defs>
+    <linearGradient id="${id}k" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="${o.sky[0]}"/><stop offset="1" stop-color="${o.sky[1]}"/></linearGradient>
+    <linearGradient id="${id}g" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="${o.ground[0]}"/><stop offset="1" stop-color="${o.ground[1]}"/></linearGradient>
+    <pattern id="${id}c" width="10" height="10" patternUnits="userSpaceOnUse"><path d="M0 0 L10 10 M10 0 L0 10" stroke="#9aa39c" stroke-width="1" fill="none"/></pattern></defs>
+    <rect width="${W}" height="${H}" fill="url(#${id}k)"/>`;
+  if (o.sun) s += `<circle cx="${o.sun[0]}" cy="${o.sun[1]}" r="${o.sun[2]}" fill="${o.sun[3]}" opacity=".9"/>`;
+  (o.clouds||[]).forEach(([x,y,w])=> s += `<g fill="#ffffff" opacity=".55"><ellipse cx="${x}" cy="${y}" rx="${w}" ry="${w*0.28}"/><ellipse cx="${x+w*0.45}" cy="${y-w*0.12}" rx="${w*0.55}" ry="${w*0.3}"/></g>`);
+  s += `<path d="${tl}" fill="${o.far}"/>`;
+  (o.farPalms||[]).forEach(([x,h])=> s += palm(x, G-6, h, 1, o.far));
+  s += `<rect y="${G}" width="${W}" height="${H-G}" fill="url(#${id}g)"/>`;
+  if (o.road) s += `<path d="M${o.road} ${H} L${W*0.47} ${G} L${W*0.5} ${G} L${o.road+260} ${H}Z" fill="#4a4d48"/><path d="M${o.road+130} ${H} L${W*0.485} ${G}" stroke="#e9d27a" stroke-width="3" stroke-dasharray="14 12"/>`;
+  (o.palms||[]).forEach(([x,h,f])=> s += palm(x, G+18, h, f, o.palmCol));
+  const B = G+70;
+  if (o.kind==='single' || o.kind==='double') {
+    const signs = o.kind==='double' ? [[o.x-120, 0.72, o.signs[1]], [o.x+40, 1, o.signs[0]]] : [[o.x, 1, o.signs[0]]];
+    signs.forEach(([cx,sc,c])=>{ const w=250*sc, h=125*sc, b=B-(1-sc)*40, py=b-60*sc-h, px=cx-w/2;
+      s += `<ellipse cx="${cx}" cy="${b+2}" rx="${w*0.55}" ry="${8*sc}" fill="#000" opacity=".18"/>` + post(px+w*0.16, py-10*sc, b, 11*sc) + post(px+w*0.84-11*sc, py-10*sc, b, 11*sc) + panelArt(px, py, w, h, c); });
+  }
+  if (o.kind==='banner') {
+    s += `<rect x="0" y="${G-60}" width="${W}" height="${140}" fill="url(#${id}c)" opacity=".85"/><line x1="0" x2="${W}" y1="${G-60}" y2="${G-60}" stroke="#8d958f" stroke-width="4"/>`;
+    for (let x=20;x<W;x+=95) s += `<rect x="${x}" y="${G-66}" width="6" height="150" fill="#8d958f"/>`;
+    const c=o.signs[0]; const bw=300, bh=120, bx=150, by=G-48;
+    s += panelArt(bx,by,bw,bh,c,false) + [[bx+8,by+8],[bx+bw-8,by+8],[bx+8,by+bh-8],[bx+bw-8,by+bh-8],[bx+bw/2,by+8],[bx+bw/2,by+bh-8]].map(([x,y])=>`<circle cx="${x}" cy="${y}" r="3.2" fill="#cfd3cf" stroke="#777" stroke-width="1"/>`).join('');
+  }
+  if (o.kind==='directional') {
+    const cx=o.x, c=o.signs[0];
+    s += `<ellipse cx="${cx}" cy="${B+2}" rx="90" ry="7" fill="#000" opacity=".18"/>` + post(cx-6, B-215, B, 13)
+      + `<rect x="${cx-95}" y="${B-205}" width="190" height="70" fill="${c.color}"/><text x="${cx-80}" y="${B-162}" font-family="Overpass,Arial,sans-serif" font-weight="900" font-size="22" fill="#fff">${esc(c.headline)}</text><path d="M${cx+50} ${B-180} h22 v-10 l18 20 l-18 20 v-10 h-22z" fill="#fff"/>`
+      + `<rect x="${cx-95}" y="${B-128}" width="190" height="46" fill="#ffffff"/><text x="${cx}" y="${B-98}" text-anchor="middle" font-family="Overpass,Arial,sans-serif" font-weight="800" font-size="17" fill="#111">${esc(c.line1)}</text>`;
+  }
+  for (let i=0;i<26;i++){ const x=R()*W, y=G+40+R()*(H-G-40), h=6+R()*10; s += `<path d="M${x} ${y} l-3 ${-h} M${x} ${y} l2 ${-h*1.1} M${x} ${y} l5 ${-h*0.8}" stroke="${o.ground[1]}" stroke-width="1.5" opacity=".9"/>`; }
+  return s + `</svg>`;
+}
+const DUSK = { sky:['#1C3554','#F0A35E'], sun:[470,262,34,'#FFD48A'], far:'#1E2D24', palmCol:'#121C16', ground:['#3E5530','#22331C'] };
+const DAY  = { sky:['#4D9AD6','#CFE6F4'], far:'#3B5A32', palmCol:'#26361F', ground:['#6E8F43','#4C6A2D'], clouds:[[120,70,60],[430,50,80]] };
+const MORN = { sky:['#7FB0D6','#F5DEBB'], sun:[110,250,26,'#FFF1C9'], far:'#3A5232', palmCol:'#22301C', ground:['#6A8840','#4A6430'], clouds:[[480,90,55]] };
+const GOLD = { sky:['#2C4E71','#E9B46C'], sun:[150,255,30,'#FFE0A0'], far:'#25362A', palmCol:'#152018', ground:['#4D6633','#2E421F'] };
+const HERO_SCENE = { ...DUSK, seed:7, kind:'single', x:300, palms:[[70,200,1],[118,150,-1],[540,180,-1]], farPalms:[[250,60],[360,48],[420,70]], alt:'An AVAILABLE land sign on painted posts at dusk with palm trees', signs:[{color:'#0B6B4B',headline:'AVAILABLE',line1:'±24 Acres Industrial',line2:'I-4 frontage · Rail served'}] };
+const GALLERY = [
+  { ...DAY,  seed:11, kind:'double', x:330, road:-60, palms:[[560,170,-1]], farPalms:[[120,55],[300,62]], alt:'Two NOW SELLING community signs by a road', signs:[{color:'#0E6E8C',headline:'NOW SELLING',line1:'New Homes from the $390s',line2:'Models open daily',foot:'YOUR HOMEBUILDER'},{color:'#0E6E8C',headline:'MODEL CENTER',line1:'Next Right',line2:'Open 10–6',foot:'YOUR HOMEBUILDER'}], title:'Community entry signs', cap:'Pair of 4×8 ACM signs · Wesley Chapel' },
+  { ...MORN, seed:23, kind:'single', x:300, palms:[[60,170,1],[520,140,-1]], farPalms:[[400,58]], alt:'A FOR LEASE warehouse sign in the morning', signs:[{color:'#24525E',headline:'FOR LEASE',line1:'±60,000 SF Warehouse',line2:'32′ clear · Dock high'}], title:'Industrial listing', cap:'4×8 ACM, double-sided · Plant City' },
+  { ...DAY,  seed:31, kind:'banner', palms:[[40,160,1],[565,150,-1]], farPalms:[[300,50]], alt:'A NOW LEASING banner on a chain-link fence', signs:[{color:'#6A3A73',headline:'NOW LEASING',line1:'Studios to 2 Bedrooms',line2:'Move in this spring',foot:'YOUR COMMUNITY'}], title:'Construction fence banner', cap:'13 oz vinyl, hemmed and grommeted · Tampa' },
+  { ...GOLD, seed:43, kind:'single', x:330, road:-40, palms:[[560,190,-1]], farPalms:[[90,60],[200,46]], alt:'A FOR SALE commercial land sign in golden light', signs:[{color:'#8E1B1B',headline:'FOR SALE',line1:'±3.1 Acres Commercial',line2:'Zoned CG · Signalized corner'}], title:'Commercial land', cap:'4×8 ACM on painted 4×4 posts · Brandon' },
+  { ...MORN, seed:57, kind:'directional', x:300, palms:[[90,180,1],[470,150,-1]], farPalms:[[260,52],[520,60]], alt:'A directional sign pointing to a model center', signs:[{color:'#0B6B4B',headline:'MODEL CENTER',line1:'Turn right · 1/4 mile'}], title:'Directional signs', cap:'Post-and-panel directional · Riverview' },
+  { ...DUSK, seed:69, kind:'single', x:300, sun:[120,258,30,'#FFD48A'], palms:[[520,210,-1],[470,150,1]], farPalms:[[80,56],[200,44]], alt:'A FOR SALE office building sign at dusk', signs:[{color:'#1D3F8F',headline:'FOR SALE',line1:'Office Building ±8,900 SF',line2:'Owner-user opportunity'}], title:'Office listing', cap:'4×8 ACM, double-sided · St. Petersburg' },
+];
+const ICONS = {
+  listing:'<svg viewBox="0 0 40 40" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linejoin="round"><rect x="5" y="7" width="30" height="16"/><path d="M11 5v31M29 5v31M5 13h30"/></svg>',
+  community:'<svg viewBox="0 0 40 40" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linejoin="round"><path d="M5 20 20 8l15 12M9 17v17h22V17"/><path d="M17 34v-9h6v9"/></svg>',
+  banner:'<svg viewBox="0 0 40 40" fill="none" stroke="currentColor" stroke-width="2.4"><rect x="4" y="10" width="32" height="18"/><circle cx="8" cy="14" r="1.4" fill="currentColor"/><circle cx="32" cy="14" r="1.4" fill="currentColor"/><circle cx="8" cy="24" r="1.4" fill="currentColor"/><circle cx="32" cy="24" r="1.4" fill="currentColor"/></svg>',
+  directional:'<svg viewBox="0 0 40 40" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linejoin="round"><path d="M19 4v32"/><path d="M8 8h20l5 5-5 5H8z"/></svg>',
+  monument:'<svg viewBox="0 0 40 40" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linejoin="round"><rect x="7" y="9" width="26" height="17"/><path d="M4 26h32v8H4z"/></svg>',
+  electric:'<svg viewBox="0 0 40 40" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linejoin="round"><path d="M22 4 9 22h10l-2 14 14-19H21z"/></svg>',
+};
+function siteHeader(){
+  return `<div class="s-stagebar"><div class="s-wrap"><span><b>Staging preview.</b> The public sees only this website and the client portal.</span><span class="row"><label for="roleSel2">View as</label><select id="roleSel2">${Object.entries(ROLES).map(([k,r])=>`<option value="${k}" ${k===state.role?'selected':''}>${esc(r.label)}</option>`).join('')}</select></span></div></div>
+  <header class="s-head"><div class="s-wrap">
+    <a class="wordmark" href="#top" data-act="goHome" aria-label="${esc(SITE.name)} home">${SITE.logo?`<img src="${esc(SITE.logo)}" alt="${esc(SITE.name)}">`:`<span class="cs">C&amp;S</span><span>Graphics<small>Real estate signs · since ${SITE.since}</small></span>`}</a>
+    <nav class="s-links" aria-label="Website">${state.view==='home'?`<a href="#what">What we do</a><a href="#work">Our work</a><a href="#about">About</a><a href="#contact">Contact</a>`:''}</nav>
+    <div class="s-actions"><button type="button" class="linkbtn" data-act="goLogin">Client login</button><button type="button" class="plate" data-act="goOrder">Order here →</button></div>
+  </div></header>`;
+}
+function siteFooter(){
+  return `<footer class="s-foot"><div class="s-wrap"><span>© ${new Date().getFullYear()} ${esc(SITE.name)} · ${esc(SITE.address)} · ${esc(SITE.phone)}</span><span class="cred">Photography: Unsplash</span><span class="row"><button type="button" class="linkbtn" data-act="goLogin">Client login</button><button type="button" class="linkbtn" data-act="goOrder">Order a sign</button><button type="button" class="linkbtn" data-act="staffLogin">Staff login</button></span></div></footer>`;
+}
+function signArt(c, posts){
+  if (!posts) return `<svg viewBox="0 0 400 200" role="img" aria-label="${esc(c.headline)} sign layout">${panelArt(0,0,400,200,c,false)}</svg>`;
+  return `<svg viewBox="0 0 420 340" role="img" aria-label="A 4 by 8 ${esc(c.headline)} sign on painted posts">${post(62,8,340,17)}${post(341,8,340,17)}<g transform="translate(10,26)">${panelArt(0,0,400,200,c,false)}</g></svg>`;
+}
+const LAYOUTS = [
+  {color:'#0B6B4B',headline:'AVAILABLE',line1:'±24 Acres Industrial',line2:'I-4 frontage · Rail served',t:'Land listing',d:'4×8 ACM, double-sided'},
+  {color:'#0E6E8C',headline:'NOW SELLING',line1:'New Homes from the $390s',line2:'Models open daily',foot:'YOUR HOMEBUILDER',t:'Community entry',d:'4×8 ACM, one per entrance'},
+  {color:'#8E1B1B',headline:'FOR SALE',line1:'±3.1 Acres Commercial',line2:'Zoned CG · Signalized corner',t:'Commercial land',d:'4×8 ACM on painted 4×4 posts'},
+  {color:'#24525E',headline:'FOR LEASE',line1:'±60,000 SF Warehouse',line2:"32' clear · Dock high",t:'Industrial',d:'4×8 ACM, double-sided'},
+  {color:'#6A3A73',headline:'NOW LEASING',line1:'Studios to 2 Bedrooms',line2:'Move in this spring',foot:'YOUR COMMUNITY',t:'Construction fence banner',d:'13 oz vinyl, hemmed and grommeted'},
+  {color:'#1D3F8F',headline:'COMING SOON',line1:'Office Building ±8,900 SF',line2:'Owner-user opportunity',t:'Pre-marketing',d:'4×6 ACM, double-sided'},
+];
+function vHome(){
+  const std = quote({...freshQuote(), city:'Tampa'}, null);
+  const banner = panelPrice(prod('BANNER'),10,4).price;
+  const yrs = new Date().getFullYear()-SITE.since;
+  const hero = {color:'#0B6B4B',headline:'AVAILABLE',line1:'±24 Acres Industrial',line2:'I-4 frontage · Rail served'};
+  return siteHeader() + `
+  <section class="hx" id="top"><div class="hx-bg" role="img" aria-label="Downtown Tampa skyline at night"></div><div class="s-wrap">
+    <div class="hx-copy">
+      <span class="eyebrow">Real estate signs · Tampa Bay</span>
+      <h1>The sign out front of <em>Tampa Bay's</em> deals.</h1>
+      <p class="lede">For ${yrs} years, brokers and builders have counted on our North B Street shop for the first thing a buyer sees. Get a fixed price in seconds, approve your proof online, and we plant it on our next route.</p>
+      <div class="cta"><button type="button" class="plate xl" data-act="goOrder">Order here →</button><button type="button" class="linkbtn" data-act="goLogin">Existing client? Log in</button></div>
+      <div class="hx-meta"><span>Since ${SITE.since}</span><span>Built in West Tampa</span><span>Proof in 1 business day</span></div>
+    </div>
+    <div class="hx-sign"><div class="hx-chip"><small>4×8 · posts · installed</small><b>${money0(std.sub)}</b></div>${signArt(hero,true)}</div>
+  </div></section>
+  <section class="lg" aria-label="Clients"><div class="s-wrap"><span class="eyebrow">Trusted by the region's brokers, builders and institutions</span>
+    <div class="lg-row">${SITE.clients.map(c=>c.logo?`<img src="${esc(c.logo)}" alt="${esc(c.name)}" style="height:${c.h||36}px" loading="lazy">`:`<span>${esc(c.name)}</span>`).join('')}</div></div></section>
+  <section class="st" aria-label="At a glance"><div class="s-wrap">
+    <div><b>${SITE.since}</b><span>Building signs on North B Street in West Tampa</span></div>
+    <div><b>${money0(std.sub)}</b><span>Standard 4×8 with posts, installed in Tampa, before tax</span></div>
+    <div><b>1 day</b><span>From paid deposit to the proof in your inbox</span></div>
+    <div><b>$0</b><span>Removal for repeat clients. We repaint and reuse the posts.</span></div>
+  </div></section>
+  <section class="s-sec" id="what"><div class="s-wrap">
+    <div class="sv-head"><div><span class="eyebrow">What we build</span><h2 class="s-h">Every sign a listing or a new community needs</h2></div>
+      <p>Designed, printed, built, painted and installed by our own crew, from a single 4×8 on a corner lot to the full sign package for a new subdivision.</p></div>
+    <div class="bento">
+      <article class="tile a"><img src="img/aerial-road.jpg" alt="Aerial view of a highway beside open land" loading="lazy"><span class="from">From ${money0(std.sub)} installed</span><h3>Commercial listing signs</h3><p>4×8, 4×6, 4×4 and 3×4 panels in aluminum composite or painted MDO, set on painted 4×4 posts at the frontage that matters.</p></article>
+      <article class="tile b"><img src="img/aerial-homes.jpg" alt="Aerial view of a new home subdivision" loading="lazy"><span class="from">Builder pricing for volume accounts</span><h3>Homebuilder community packages</h3><p>Now Selling, Coming Soon, model center and directional runs, rolled out across every community on one order.</p></article>
+      <article class="tile"><img src="img/print-shop.jpg" alt="Large-format printer printing a banner" loading="lazy"><span class="from">4×10 banner from ${money0(banner)}</span><h3>Banners and print</h3><p>13 oz vinyl for fences, buildings and leasing offices, printed in house.</p></article>
+      <article class="tile"><img src="img/framing.jpg" alt="New home framing on a construction site" loading="lazy"><span class="from">Priced by quote</span><h3>Construction sites</h3><p>Permit boards, contractor panels and fence wraps from groundbreaking to closing.</p></article>
+    </div>
+    <div class="also">
+      <div>${ICONS.directional}<span><b>Street and directional</b>Post-and-panel directionals, private street names and wayfinding.</span></div>
+      <div>${ICONS.monument}<span><b>Non-electric site signs</b>Entry and site ID signs built for Florida weather.</span></div>
+      <div>${ICONS.electric}<span><b>Electric signs</b>Illuminated signage with engineering and permitting.</span></div>
+    </div>
+  </div></section>
+  <section class="pr" id="how"><div class="pr-bg" aria-hidden="true"></div><div class="s-wrap">
+    <span class="eyebrow">How ordering works</span><h2 class="s-h">From price to planted, without the phone tag</h2>
+    <p class="s-sub">Prices are published and fixed. Half is due when you order, and the balance is due when your sign goes in the ground or you pick it up.</p>
+    <ol>
+      <li><h3>Get your price</h3><p>Pick the sign and the site. The total, deposit and install fee show before you commit.</p></li>
+      <li><h3>Approve your proof</h3><p>Your proof arrives within one business day. Approve it or mark changes online.</p></li>
+      <li><h3>We build and install</h3><p>Printed and built in our shop, installed on our next route, with a photo once it's up.</p></li>
+      <li><h3>Request removal</h3><p>When the deal closes, request removal from your account. Every sign you have in the field is listed there.</p></li>
+    </ol>
+    <div class="row" style="margin-top:40px"><button type="button" class="plate" data-act="goOrder">Price your sign →</button></div>
+  </div></section>
+  <section class="s-sec" id="work"><div class="s-wrap">
+    <div class="sv-head"><div><span class="eyebrow">Layouts</span><h2 class="s-h">Built to be read at 45 miles an hour</h2></div>
+      <p>Big headline, one line that sells, one line of detail, and your name and number. We keep each client's template on file, so a reorder is just a new address.</p></div>
+    <div class="lay">${LAYOUTS.map(l=>`<figure><div class="plate-wrap">${signArt(l,false)}</div><figcaption><b>${esc(l.t)}</b>${esc(l.d)}</figcaption></figure>`).join('')}</div>
+  </div></section>
+  <section class="s-sec alt" id="about"><div class="s-wrap ab">
+    <div class="ab-photo"><img src="img/tampa-day.jpg" alt="Downtown Tampa along the Hillsborough River" loading="lazy"><span>Tampa, since ${SITE.since}</span></div>
+    <div><span class="eyebrow">About us</span><h2 class="s-h">A West Tampa sign shop that has been planting signs for ${yrs} years</h2>
+      <p>${esc(SITE.name)} opened on North B Street in ${SITE.since}. Since then, Tampa Bay's commercial brokers, homebuilders and institutions have trusted us with the sign at the property, the thing that tells the whole street a deal is happening.</p>
+      <p>Everything is done by our own people, from layout and printing to fabrication, painting and installation. Now ordering is as fast as the work. Clients get instant pricing, online proofs, order tracking, payments and removal requests in one place.</p>
+      <dl><dt>Shop</dt><dd>${esc(SITE.address)}</dd><dt>Service area</dt><dd>${esc(SITE.serviceArea)}</dd><dt>In-house</dt><dd>Design, print, fabrication, paint, install</dd><dt>Reuse</dt><dd>Returned posts repainted, panels refaced</dd></dl>
+    </div>
+  </div></section>
+  <section class="cta2"><div class="cta2-bg" aria-hidden="true"></div><div class="s-wrap">
+    <div><h2>Your listing goes live today. Your sign should too.</h2><p>Price it, approve it and track it from your phone.</p></div>
+    <button type="button" class="plate xl" data-act="goOrder">Order here →</button>
+  </div></section>
+  <section class="s-sec" id="contact"><div class="s-wrap s-contact">
+    <div class="info"><div><span class="eyebrow">Contact us</span><h2 class="s-h">Talk to the shop</h2></div>
+      <div><b>Visit</b>${esc(SITE.address)}</div><div><b>Call</b><span class="num">${esc(SITE.phone)}</span></div><div><b>Email</b>${esc(SITE.email)}</div><div><b>Shop</b>Monday to Thursday. Installs run on weekly routes.</div>
+      <p class="note">Ready to order? Use Order here to get a price instantly. You don't need to wait for a callback.</p></div>
+    ${state.contactSent ? `<div class="card"><h2>Thanks, we have your message.</h2><p class="muted">Someone from the shop will reply within one business day.</p></div>` :
+    `<form id="contactForm" class="form" novalidate>
+      <div class="field"><label for="cfName">Name</label><input id="cfName" required autocomplete="name"></div>
+      <div class="field"><label for="cfCo">Company</label><input id="cfCo" autocomplete="organization"></div>
+      <div class="field"><label for="cfEmail">Email</label><input id="cfEmail" type="email" required autocomplete="email"></div>
+      <div class="field"><label for="cfPhone">Phone</label><input id="cfPhone" type="tel" autocomplete="tel"></div>
+      <div class="field full"><label for="cfTopic">I'm asking about</label><select id="cfTopic"><option>A listing sign</option><option>Signs for a new community</option><option>Banners</option><option>Street or directional signs</option><option>Electric or monument signs</option><option>Opening an account</option><option>Something else</option></select></div>
+      <div class="field full"><label for="cfMsg">Message</label><textarea id="cfMsg" rows="4"></textarea></div>
+      ${state.contactErr?`<div class="alert warn" style="grid-column:1/-1">${esc(state.contactErr)}</div>`:''}
+      <div class="full"><button class="btn primary" type="submit">Send message</button></div>
+    </form>`}
+  </div></section>` + siteFooter();
+}
+function vSignin(){
+  const ordering = state.afterLogin==='c_quote';
+  return siteHeader() + `<section class="s-sec"><div class="s-wrap">
+    <span class="eyebrow">Client login</span><h2 class="s-h">${ordering?'Sign in to place your order':'Sign in to your account'}</h2>
+    <p class="s-sub">Clients can see every order, proof, invoice and sign in the field. If you're new, setting up an account takes a minute.</p>
+    <div class="s-signin">
+      <form class="card" id="loginForm"><h2>Existing client</h2>
+        <div class="field"><label for="liEmail">Work email</label><input id="liEmail" type="email" required autocomplete="email" placeholder="you@company.com" value="${esc(state.loginEmail||'')}"></div>
+        ${state.loginErr?`<div class="alert warn">${esc(state.loginErr)}</div>`:''}
+        <div><button class="btn primary" type="submit">Email me a sign-in link</button></div>
+        <p class="note">Demo: this signs you in right away. Try dana@bayline.example. In production it emails a one-time sign-in link.</p></form>
+      <form class="card" id="signupForm"><h2>New client</h2><div class="form">
+        <div class="field full"><label for="suCo">Company</label><input id="suCo" required autocomplete="organization"></div>
+        <div class="field"><label for="suType">Type</label><select id="suType"><option>Brokerage</option><option>Homebuilder</option><option>Developer</option><option>Institution</option><option>Other</option></select></div>
+        <div class="field"><label for="suName">Your name</label><input id="suName" required autocomplete="name"></div>
+        <div class="field"><label for="suEmail">Work email</label><input id="suEmail" type="email" required autocomplete="email"></div>
+        <div class="field"><label for="suPhone">Phone</label><input id="suPhone" type="tel" autocomplete="tel"></div></div>
+        ${state.signupErr?`<div class="alert warn">${esc(state.signupErr)}</div>`:''}
+        <div><button class="btn primary" type="submit">Create account</button></div></form>
+    </div></div></section>` + siteFooter();
+}
+function enterPortal(acctId){ state.role='customer'; state.acct=acctId; state.view=state.afterLogin||'c_orders'; state.quote=freshQuote(); state.loginErr=state.signupErr=''; render(); window.scrollTo(0,0); }
+const ACT_SITE = ({
+  goHome:()=>{ state.view='home'; render(); window.scrollTo(0,0); },
+  goOrder:()=>{ state.afterLogin='c_quote'; state.view='signin'; state.role='public'; render(); window.scrollTo(0,0); },
+  goLogin:()=>{ state.afterLogin='c_orders'; state.view='signin'; state.role='public'; render(); window.scrollTo(0,0); },
+  goSite:()=>{ state.role='public'; state.view='home'; state.openOrder=null; render(); window.scrollTo(0,0); },
+  staffLogin:()=>{ state.role='owner'; state.view='dashboard'; render(); window.scrollTo(0,0); },
+});
+document.addEventListener('submit', e => {
+  const f = e.target; e.preventDefault();
+  const v = id => (document.getElementById(id)?.value||'').trim();
+  if (f.id==='contactForm') {
+    if (!v('cfName') || !/^\S+@\S+\.\S+$/.test(v('cfEmail'))) { state.contactErr='Add your name and a valid email so we can reply.'; render(); return; }
+    logEvt('Website inquiry', `${v('cfName')}${v('cfCo')?' ('+v('cfCo')+')':''} · ${v('cfEmail')} ${v('cfPhone')} · ${v('cfTopic')}: ${v('cfMsg')||'no message'}`);
+    state.contactSent=true; state.contactErr=''; render(); return;
+  }
+  if (f.id==='loginForm') {
+    const em=v('liEmail').toLowerCase(); state.loginEmail=em; const dom=em.split('@')[1];
+    const a = dom && Store.all('accounts').find(x=>x.domain===dom);
+    if (!a) { state.loginErr = em ? "We couldn't find an account for that email. Set one up on the right, or call the shop." : 'Enter your work email.'; render(); return; }
+    enterPortal(a.id); return;
+  }
+  if (f.id==='signupForm') {
+    const em=v('suEmail').toLowerCase();
+    if (!v('suCo') || !v('suName') || !/^\S+@\S+\.\S+$/.test(em)) { state.signupErr='Company, your name and a valid work email are required.'; render(); return; }
+    const dom=em.split('@')[1]; const ex=Store.all('accounts').find(x=>x.domain===dom);
+    if (ex) { state.signupErr=`${ex.name} already has an account. Sign in on the left with your work email.`; render(); return; }
+    const n = Store.all('accounts').length+1; const colors=['#1D3F8F','#8E1B1B','#0E6E8C','#6A3A73','#24525E','#2F5D3A','#6B4E16'];
+    const a = { id:'A'+n+'-'+rid(), name:v('suCo'), type:v('suType'), domain:dom, color:colors[n%colors.length], hist12:{orders:0,billed:0}, billingEmail:em, phone:v('suPhone'), contacts:[{name:v('suName'),title:'',email:em}], createdAt:iso(now()) };
+    Store.put('accounts', a); logEvt('New client account', `${a.name} (${a.type}) created on the website by ${v('suName')}, ${em}`);
+    enterPortal(a.id);
+  }
+});
+
+const VIEWS = { home:vHome, signin:vSignin, dashboard:vDashboard, orders:vOrders, intake:vIntake, design:vDesign, shop:vShop, installs:vInstalls, inventory:vInventory, ar:vAR, accounts:vAccounts, pricebook:vPricebook, sops:vSops, automations:vAutomations,
+  c_quote:vCQuote, c_orders:vCOrders, c_proofs:vCProofs, c_invoices:vCInvoices, c_field:vCField, c_files:vCFiles };
+
+/* ============================================================
+   EVENTS
+   ============================================================ */
+function setPath(obj, path, val){ const k=path.split('.'); let o=obj; for(let i=0;i<k.length-1;i++) o=o[k[i]]; o[k.at(-1)]=val; }
+const PCT_PATHS = /^(margins\.|labor\.(overheadPct|wastePct|routeShare|postReusePct)|policy\.(depositPct|rushPct|taxRate))/;
+const ACT = {
+  nav:d=>{ state.view=d.v; state.openOrder=null; render(); window.scrollTo(0,0); },
+  filter:d=>{ state.filter=d.f; render(); },
+  arTab:d=>{ state.arTab=d.t; render(); },
+  open:d=>{ if(Store.get('orders',d.id)){ state.openOrder=d.id; renderModal(); } },
+  closeModal:()=>{ state.openOrder=null; renderModal(); },
+  resetDemo:()=>{ Store.reset(); state.quote=freshQuote(); state.intake=null; state.pending={}; render(); toast('Sample data reset'); },
+  sendDeposit:d=>{ Auto.sendDeposit(d.id); render(); toast('Deposit invoice sent'); },
+  recordPay:d=>{ Auto.pay(d.id,'check/ACH (recorded)'); render(); toast('Payment recorded'); },
+  sendProof:d=>{ Auto.sendProof(d.id, state.pending['proof-'+d.id]||null); delete state.pending['proof-'+d.id]; render(); toast('Proof sent to customer'); },
+  approveProxy:d=>{ const o=Store.get('orders',d.id); Auto.approve(d.id, o.contact+' (by phone, logged by '+ROLES[state.role].label+')'); render(); toast('Approval logged'); },
+  markPrinted:d=>{ Auto.printed(d.id); render(); toast('Moved to shop'); },
+  markBuilt:d=>{ Auto.built(d.id); render(); toast('Built and scheduled'); },
+  pickup:d=>{ const n=($('#sig-'+d.id)?.value||'').trim(); if(!n){ toast('Enter who picked it up'); $('#sig-'+d.id)?.focus(); return; } Auto.complete(d.id,'pickup',{signedBy:n}); render(); toast('Balance invoice sent'); },
+  closeout:d=>{ const ph=state.pending[d.id]; if(!ph){ toast('Add a site photo first'); return; } Auto.complete(d.id,'install',{photo:ph}); delete state.pending[d.id]; render(); toast('Install closed, balance invoice sent'); },
+  removed:d=>{ const ph=state.pending[d.id]; if(!ph){ toast('Add a photo first'); return; } Auto.removed(d.id, ph); delete state.pending[d.id]; render(); toast('Removal complete, stock updated'); },
+  repaint:d=>{ Auto.repaint(+d.n); render(); toast('Posts back in stock'); },
+  reface:d=>{ Auto.reface(+d.n); render(); toast('Panels back in stock'); },
+  receive:d=>{ const n=+($('#rcv-'+d.id)?.value||0); if(n>0){ Auto.receive(d.id,n); render(); toast('Stock received'); } },
+  remind:d=>{ const i=Store.get('invoices',d.id); logEvt('Reminder sent', `${i.id} ${money(i.amount)} reminder emailed to ${Store.get('accounts',i.accountId).billingEmail}`, i.orderId); render(); toast('Reminder sent'); },
+  parseIntake:()=>{ state.intake.text=$('#intakeText').value; state.intake.draft=parseEmail(state.intake.text); render(); },
+  blankIntake:()=>{ state.intake.draft={ found:[], missing:['Fill in every field'], q:{...freshQuote(), source:'phone'}, acct:'' }; render(); },
+  intakeConfirm:()=>{ const d=state.intake.draft; const o=Auto.createOrder(d.q, d.acct, 'deposit'); state.intake.draft=null; state.openOrder=o.id; render(); toast(`${o.id} created, deposit invoice sent`); },
+  intakeSave:()=>{ const d=state.intake.draft; const o=Auto.createOrder(d.q, d.acct, 'quote'); state.intake.draft=null; state.openOrder=o.id; render(); toast(`${o.id} saved as quote`); },
+  portalConfirm:()=>{ const o=Auto.createOrder(state.quote, state.acct, 'deposit'); const i=Store.all('invoices').find(x=>x.orderId===o.id&&x.kind==='deposit'); Auto.pay(i.id,'card'); state.quote=freshQuote(); state.view='c_orders'; render(); toast(`${o.id} placed, deposit paid`); },
+  portalSave:()=>{ const o=Auto.createOrder(state.quote, state.acct, 'quote'); state.quote=freshQuote(); state.view='c_orders'; render(); toast(`${o.id} saved for ${PB().policy.quoteValidDays} days`); },
+  requestQuote:d=>{ const q = d.ctx==='portal'?state.quote:state.intake.draft.q; const acct = d.ctx==='portal'?state.acct:state.intake.draft.acct; logEvt('Custom quote requested', `${acctName(acct)}: ${prod(q.productId).name} at ${q.street||''} ${q.city}. Routed to account manager.`); toast('Sent to your account manager'); },
+  custConfirmQuote:d=>{ Auto.sendDeposit(d.id); const i=Store.all('invoices').find(x=>x.orderId===d.id&&x.kind==='deposit'&&x.status==='open'); Auto.pay(i.id,'card'); render(); toast('Deposit paid, order released to design'); },
+  custApprove:d=>{ const o=Store.get('orders',d.id); Auto.approve(d.id, o.contact+' (portal)'); render(); toast('Approved for print'); },
+  custChanges:d=>{ const n=($('#chg-'+d.id)?.value||'').trim(); if(!n){ toast('Describe the change you need'); $('#chg-'+d.id)?.focus(); return; } Auto.requestChanges(d.id, n); render(); toast('Sent to the designer'); },
+  custPay:d=>{ Auto.pay(d.id,'card'); render(); toast('Payment received'); },
+  payAll:()=>{ Store.all('invoices').filter(i=>i.accountId===state.acct&&i.status==='open').forEach(i=>Auto.pay(i.id,'card')); render(); toast('All invoices paid'); },
+  custRemoval:d=>{ Auto.requestRemoval(d.id); render(); toast('Removal scheduled'); },
+  reorder:d=>{ const o=Store.get('orders',d.id); state.quote={ productId:o.productId, qty:o.qty, w:o.w, h:o.h, fulfillment:o.fulfillment, city:o.city, street:'', includePosts:o.includePosts, rush:false, headline:o.copy.headline, line1:o.copy.line1, line2:o.copy.line2 }; state.view='c_quote'; render(); toast('Layout copied. Add the new address.'); },
+};
+document.addEventListener('click', e => {
+  const el = e.target.closest('[data-act]'); if (!el) return;
+  if (el.classList.contains('modal-bg') && e.target.closest('[data-stop]')) return;
+  if (el.tagName==='LABEL') return;
+  const fn = ACT[el.dataset.act] || ACT_SITE[el.dataset.act]; if (fn) { e.preventDefault(); fn(el.dataset, el); }
+});
+document.addEventListener('keydown', e => {
+  if (e.key==='Escape' && state.openOrder) ACT.closeModal();
+  if ((e.key==='Enter'||e.key===' ') && e.target.matches('tr[data-act]')) { e.preventDefault(); ACT[e.target.dataset.act](e.target.dataset); }
+});
+function onQuoteInput(el){
+  const ctx = el.dataset.ctx, key = el.dataset.q;
+  const target = ctx==='portal' ? state.quote : state.intake.draft.q;
+  let v = el.type==='checkbox' ? el.checked : el.value;
+  if (key==='acct') { state.intake.draft.acct = v; } else target[key] = v;
+  if (key==='productId') { const p=prod(v); if(!p.custom){ target.w=p.w; target.h=p.h; } else if (v==='BANNER'){ target.w=10; target.h=4; } target.includePosts=!!p.posts; render(); return; }
+  const acct = ctx==='portal' ? state.acct : state.intake.draft.acct;
+  $('#'+ctx+'-panel').innerHTML = quotePanel(ctx, target, acct);
+}
+document.addEventListener('input', e => { if (e.target.dataset.q && e.target.type!=='checkbox' && e.target.tagName!=='SELECT') onQuoteInput(e.target); });
+document.addEventListener('change', async e => {
+  const el=e.target;
+  if (el.id==='roleSel'||el.id==='roleSel2') { state.role=el.value; state.openOrder=null; render(); return; }
+  if (el.id==='acctSel') { state.acct=el.value; state.quote=freshQuote(); render(); return; }
+  if (el.dataset.q && (el.type==='checkbox'||el.tagName==='SELECT')) { onQuoteInput(el); return; }
+  if (el.dataset.pb) {
+    const pb = JSON.parse(JSON.stringify(PB())); let v = parseFloat(el.value); if (isNaN(v)) return;
+    if (PCT_PATHS.test(el.dataset.pb)) v = v/100;
+    if (/^margins\./.test(el.dataset.pb) && (v<=0 || v>=0.95)) { toast('Margin must be between 0% and 95%'); render(); return; }
+    setPath(pb, el.dataset.pb, v); Store.put('settings', pb);
+    logEvt('Price book changed', `${el.dataset.pb} set to ${el.value}`); render(); toast('Prices recalculated'); return;
+  }
+  if (el.dataset.file) {
+    const f = el.files[0]; if (!f) return;
+    const up = await uploadFile(f, el.dataset.file+'/'+el.dataset.id);
+    state.pending[el.dataset.file==='proof' ? 'proof-'+el.dataset.id : el.dataset.id] = up; render();
+  }
+});
+
+Store.init().then(render);
+</script>
+</body></html>

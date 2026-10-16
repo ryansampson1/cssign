@@ -1,0 +1,44 @@
+rules_version = '2';
+// PRODUCTION: role-based access. Custom claims set by the setRole function:
+//   staff:    { role: 'owner'|'am'|'designer'|'shop'|'installer'|'bookkeeper' }
+//   customer: { role: 'customer', accountId: 'A1' }
+// Invoices are marked paid only by Cloud Functions (Stripe webhook), never by a browser.
+service cloud.firestore {
+  match /databases/{db}/documents {
+    function signedIn() { return request.auth != null; }
+    function role() { return request.auth.token.role; }
+    function isOwner() { return signedIn() && role() == 'owner'; }
+    function isStaff() { return signedIn() && role() in ['owner','am','designer','shop','installer','bookkeeper']; }
+    function isRole(r) { return signedIn() && (role() == 'owner' || role() in r); }
+    function myAccount() { return request.auth.token.accountId; }
+    function ownsDoc() { return signedIn() && role() == 'customer' && resource.data.accountId == myAccount(); }
+    function onlyChanges(keys) { return request.resource.data.diff(resource.data).affectedKeys().hasOnly(keys); }
+
+    match /settings/{id} {
+      allow read: if signedIn();                       // customers need the price book to see prices
+      allow write: if isOwner() || (id == 'seq' && isStaff()) || (id == 'stats' && isRole(['shop']));
+    }
+    match /accounts/{id} {
+      allow read: if isStaff() || (signedIn() && role() == 'customer' && id == myAccount());
+      allow write: if isRole(['am']);
+    }
+    match /orders/{id} {
+      allow read: if isStaff() || ownsDoc();
+      allow create: if isRole(['am']) || (signedIn() && role() == 'customer' && request.resource.data.accountId == myAccount() && request.resource.data.stage == 'quote');
+      allow update: if isStaff()
+        || (ownsDoc() && resource.data.stage == 'proof' && onlyChanges(['stage','proofs','approvedAt','extras']));
+    }
+    match /invoices/{id} {
+      allow read: if isRole(['am','bookkeeper']) || ownsDoc();
+      allow write: if false;                           // Cloud Functions only
+    }
+    match /fieldSigns/{id} {
+      allow read: if isStaff() || ownsDoc();
+      allow create: if isRole(['installer','am']);
+      allow update: if isRole(['installer','am','shop']) || (ownsDoc() && onlyChanges(['status','requestedAt','removalDate','removalFee']));
+    }
+    match /inventory/{id} { allow read: if isStaff(); allow write: if isRole(['shop','designer','installer']); }
+    match /log/{id}       { allow read: if isRole(['bookkeeper','am']); allow create: if signedIn(); }
+    match /history/{id}   { allow read: if isOwner(); allow write: if isOwner(); }
+  }
+}
